@@ -1,0 +1,91 @@
+.iphone-box {
+  position: absolute;
+  //float: right;
+  width: 270px;
+  height: 562px;
+  //display: block;
+  border-color: #e7e7e7;
+  border-style: solid;
+  border-width: 1px 1px 1px 1px;
+  border-radius: 38px 38px 38px 38px;
+  background: url(../../images/news/iPhone.png) no-repeat;
+
+  .iphone-head {
+    height: 50px;
+  }
+
+  .iphone-container {
+    margin: 0;
+    border-color: #e7e7e7;
+    border-style: solid;
+    border-width: 0px 1px 0px 1px;
+    width: 250px;
+    margin: 0 auto;
+    padding-bottom: 11px;
+    height: 450px;
+    border: 1px solid #c5c5c5;
+  }
+
+  .iphone-navbar {
+    width: 248px;
+    height: 42px;
+    background-image: url("../../images/coupon/iphone8-navbar.png");
+    background-size: cover;
+    background-position: center;
+    position: absolute;
+
+    .iphone-context {
+      position: relative;
+      width: 247px;
+      margin-top: 42px;
+      height: 406px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: #fff;
+      padding: 10px;
+
+      img {
+        height: auto;
+        width: 100%;
+      }
+
+      .news-head {
+        width: 100%;
+        font-size: 16px;
+      }
+
+      .news-author {
+        font-size: 12px;
+        margin-top: 10px;
+
+        &-name {
+          color: #5b6a91;
+        }
+
+        &-time {
+          margin-left: 5px;
+          color: #b3b3b3;
+        }
+      }
+
+      .news-body {
+        width: 100%;
+        margin-top: 5px;
+        font-size: 12px;
+        word-wrap: break-word;
+        word-break: break-all;
+      }
+
+      .modify-tip {
+        margin-top: 10px;
+        text-align: left;
+        font-size: 12px;
+        color: rgba(0,0,0,0.3);
+      }
+    }
+
+    .iphone-context::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}
