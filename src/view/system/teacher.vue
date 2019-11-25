@@ -145,9 +145,11 @@
           page: this.pageInfo.pageNum || 1,
           size: this.pageInfo.pageSize || 10
         };
-        this.$http.get('/role/pageList', params).then((res) => {
+  
+        this.$http.get('/teacher/list', params).then((res) => {
           self.loading = false;
           if (res.code === 200) {
+            console.log(res.data);
             const result = res.data;
             self.data = result && result.list;
             self.pageInfo.total = result && result.total;
@@ -217,7 +219,6 @@
         this.isSaving = false;
         this.$refs.teacherForm.resetFields();
         this.modalTitle = '添加角色';
-//        this.resetCheckMenu();
         this.teacherForm = {
           code: undefined,
           name: undefined,
@@ -278,7 +279,7 @@
                 }
               })
             } else {
-              this.$http.post('/role/addRole', self.teacherForm).then((res) => {
+              this.$http.post('/teacher/add', self.teacherForm).then((res) => {
                 if (res.code === 200) {
                   self.isSaving = false;
                   self.editModal = false;
