@@ -302,11 +302,11 @@
       handleSubmit() {
         this.isSaving = true;
         let self = this;
-        console.log(this.data[index].id);
+        console.log(this.teacherForm.id);
         this.$refs.teacherForm.validate((valid) => {
           if (valid) {
-             if (123) {
-              this.$http.put('/teacher', self.roleForm).then((res) => {
+             if (this.teacherForm.id) {
+              this.$http.put('/teacher', self.teacherForm).then((res) => {
                 if (res.code === 200) {
                   self.isSaving = false;
                   self.editModal = false;
