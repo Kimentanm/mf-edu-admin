@@ -49,14 +49,33 @@
         :title="modalTitle"
         :styles="{top: '20px'}">
       <Form ref='teacherForm' :model='teacherForm' :rules='teacherFormRule' :label-width='90'>
-        <FormItem label='Code' prop='code'>
-          <Input v-model='teacherForm.code' :maxlength=30 placeholder='请输入code' style="width: 550px;"/>
+        <FormItem label='用户名' prop='userName'>
+          <Input v-model='teacherForm.userName' :maxlength=50 placeholder='请输入用户名' style="width: 550px;"/>
         </FormItem>
-        <FormItem label='名称' prop='name'>
-          <Input v-model='teacherForm.name' :maxlength=50 placeholder='请输入name' style="width: 550px;"/>
+        <FormItem label='姓名' prop='realName'>
+          <Input v-model='teacherForm.realName' :maxlength=50 placeholder='请输入真实姓名' style="width: 550px;"/>
         </FormItem>
-        <FormItem label='描述' prop='description'>
-          <Input v-model='teacherForm.description' type='textarea' :maxlength=500 style="width: 550px;"
+        <FormItem label='性别' prop='gender'>
+          <i-select placeholder="请选择性别" :autosize='{minRows: 2,maxRows: 5}' 
+            :maxlength=500 style="width: 550px;"v-model='teacherForm.gender'>
+              <i-option value="0">男</i-option>
+              <i-option value="1">女</i-option>
+          </i-select>
+        </FormItem>
+        <FormItem label='密码' prop='password'>
+          <Input v-model='teacherForm.password' :maxlength=500 style="width: 550px;"
+                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
+        </FormItem>
+        <FormItem label='工作号码' prop='officePhone'>
+          <Input v-model='teacherForm.officePhone'  :maxlength=500 style="width: 550px;"
+                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
+        </FormItem>
+        <FormItem label='电话号码' prop='mobilePhone'>
+          <Input v-model='teacherForm.mobilePhone'  :maxlength=500 style="width: 550px;"
+                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
+        </FormItem>
+        <FormItem label='邮箱' prop='email'>
+          <Input v-model='teacherForm.email' :maxlength=500 style="width: 550px;"
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
         </FormItem>
       </Form>
@@ -87,25 +106,30 @@
     data() {
       return {
         teacherForm: {
-          code: undefined,
-          name: undefined,
-          description: undefined,
-          menuIds: [],
+          userName: undefined,
+          realName: undefined,
+          password: undefined,
+          mobilePhone: undefined,
+          officePhone: undefined,
+          gender: undefined,
+          email: undefined,
         },
         teacherFormRule: {
-          code: [
+          userName: [
+            { required: true, message: '用户名不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
-          name: [
-            { required: true, message: 'Name不能为空.', trigger: 'blur' },
+          realName: [
+            { required: true, message: '姓名不能为空.', trigger: 'blur' },
+            { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
+          ],
+          gender: [
+            { required: true, message: '性别不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: 'Name最多255字符', trigger: 'blur' },
           ],
-          description: [
-            { required: true, message: 'Description不能为空.', trigger: 'blur' },
-            { type: 'string', max: 255, message: 'Description最多255字符', trigger: 'blur' },
-          ],
-          menuIds: [
-            { type: 'array', message: '权限不能为空', trigger: 'blur', required: true }
+          password: [
+            { required: true, message: '密码不能为空.', trigger: 'blur' },
+            { type: 'string', max: 255, message: '密码最多255字符', trigger: 'blur' },
           ]
         },
         loading: false,
@@ -122,9 +146,12 @@
         deleteIndex: '',
         columns: [
           { type: 'index', title: '序号', width: 60, align: 'center' },
-          { title: 'Code', key: 'code', align: 'center' },
-          { title: '名称', key: 'name', align: 'center' },
-          { title: '描述', key: 'description', align: 'center' },
+          { title: '用户名', key: 'userName', align: 'center' },
+          { title: '姓名', key: 'realName', align: 'center' },
+          { title: '性别', key: 'gender', align: 'center' },
+          { title: '工作号码', key: 'officePhone', align: 'center' },
+          { title: '电话号码', key: 'mobilePhone', align: 'center' },
+          { title: '邮箱', key: 'email', align: 'center' },
           {
             title: '操作',
             align: 'center',
@@ -145,14 +172,21 @@
           page: this.pageInfo.pageNum || 1,
           size: this.pageInfo.pageSize || 10
         };
-  
-        this.$http.get('/teacher/list', params).then((res) => {
+        this.$http.get('/teacher', params).then((res) => {
           self.loading = false;
-          if (res.code === 200) {
-            console.log(res.data);
+          if (res.code === 200) {        
             const result = res.data;
             self.data = result && result.list;
             self.pageInfo.total = result && result.total;
+            for (let i = 0; i < self.data.length; i++) {
+               if(self.data[i].gender=='0'){
+                 self.data[i].gender='男'
+               }
+               else{
+                 self.data[i].gender='女';
+               }
+              }
+            console.log(self.data);
           } else {
             self.$Message.error('获取数据失败！' + res.code);
           }
@@ -220,10 +254,13 @@
         this.$refs.teacherForm.resetFields();
         this.modalTitle = '添加角色';
         this.teacherForm = {
-          code: undefined,
-          name: undefined,
-          description: undefined,
-          menuIds: [],
+          userName: undefined,
+          realName: undefined,
+          password: undefined,
+          mobilePhone: undefined,
+          officePhone: undefined,
+          gender: undefined,
+          email: undefined,
         };
         this.editModal = true;
       },
@@ -234,7 +271,7 @@
         this.$refs.teacherForm.resetFields();
         this.modalTitle = '编辑角色';
         this.editModal = true;
-        this.$http.get('/role/detailInfo/' + self.data[index].id, {}).then((res) => {
+        this.$http.get('/teacher/' + self.data[index].id, {}).then((res) => {
           if (res.code === 200) {
             self.teacherForm = res.data;
             console.log(self.teacherForm.menuIds);
@@ -265,10 +302,11 @@
       handleSubmit() {
         this.isSaving = true;
         let self = this;
+        console.log(this.data[index].id);
         this.$refs.teacherForm.validate((valid) => {
           if (valid) {
-            if (this.teacherForm.id) {
-              this.$http.put('/role/updateRole', self.teacherForm).then((res) => {
+             if (123) {
+              this.$http.put('/teacher', self.roleForm).then((res) => {
                 if (res.code === 200) {
                   self.isSaving = false;
                   self.editModal = false;
@@ -279,7 +317,7 @@
                 }
               })
             } else {
-              this.$http.post('/teacher/add', self.teacherForm).then((res) => {
+              this.$http.post('/teacher', self.teacherForm).then((res) => {
                 if (res.code === 200) {
                   self.isSaving = false;
                   self.editModal = false;
@@ -290,7 +328,7 @@
                 }
               })
             }
-          } else {
+          }else {
             self.isSaving = false;
             self.$Message.error('表单验证失败！');
           }
@@ -308,7 +346,7 @@
       deleteItem() {
         this.isDeleting = true;
         const self = this;
-        this.$http.delete('/role/deleteRole/' + self.data[self.deleteIndex].id, {}).then((res) => {
+        this.$http.delete('/teacher/' + self.data[self.deleteIndex].id, {}).then((res) => {
           if (res.code === 200) {
             self.isDeleting = false;
             self.deleteModal = false;
