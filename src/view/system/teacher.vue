@@ -56,7 +56,7 @@
           <Input v-model='teacherForm.realName' :maxlength=50 placeholder='请输入真实姓名' style="width: 550px;"/>
         </FormItem>
         <FormItem label='性别' prop='gender'>
-          <i-select placeholder="请选择性别" :autosize='{minRows: 2,maxRows: 5}' 
+          <i-select placeholder="请选择性别" :autosize='{minRows: 2,maxRows: 5}'
             :maxlength=500 style="width: 550px;"v-model='teacherForm.gender'>
               <i-option value="0">男</i-option>
               <i-option value="1">女</i-option>
@@ -88,10 +88,10 @@
     <Modal v-model="deleteModal" width="360">
       <p slot="header" style="color:#f60;text-align:center">
         <Icon type="information-circled"></Icon>
-        <span>删除角色</span>
+        <span>删除教师</span>
       </p>
       <div style="text-align:center">
-        <p>删除该角色，将无法恢复！</p>
+        <p>删除该教师，将无法恢复！</p>
         <p>是否删除?</p>
       </div>
       <div slot="footer">
@@ -174,7 +174,7 @@
         };
         this.$http.get('/teacher', params).then((res) => {
           self.loading = false;
-          if (res.code === 200) {        
+          if (res.code === 200) {
             const result = res.data;
             self.data = result && result.list;
             self.pageInfo.total = result && result.total;
@@ -252,7 +252,7 @@
       add() {
         this.isSaving = false;
         this.$refs.teacherForm.resetFields();
-        this.modalTitle = '添加角色';
+        this.modalTitle = '添加教师信息';
         this.teacherForm = {
           userName: undefined,
           realName: undefined,
@@ -269,7 +269,7 @@
         this.isSaving = false;
         const self = this;
         this.$refs.teacherForm.resetFields();
-        this.modalTitle = '编辑角色';
+        this.modalTitle = '编辑教师信息';
         this.editModal = true;
         this.$http.get('/teacher/' + self.data[index].id, {}).then((res) => {
           if (res.code === 200) {
