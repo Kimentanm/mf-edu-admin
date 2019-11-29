@@ -5,6 +5,8 @@ import codegroupRouter from './codegroupRouter'
 import userRouter from './userRouter'
 import ownSpace from './ownSpace'
 import teacherRouter from './teacherRouter'
+import studentRouter from './studentRouter'
+import classroomRouter from './classroomRouter'
 // *** insert import here *** // // don't change this line
 
 export default {
@@ -21,6 +23,8 @@ export default {
     codegroupRouter,
 		codeRouter,
 	ownSpace,
-	teacherRouter
+	teacherRouter,
+	studentRouter,
+	classroomRouter
 	]
 }

@@ -10,8 +10,6 @@
       <Row>
         <Col span="24">
         <Button class="" type="primary" @click="add">添加</Button>
-        <Input class="pull-right" v-model="searchModel"
-               icon="ios-search" placeholder="请输入用户名..." style="width: 200px" @on-enter="reloadList" />
         </Col>
       </Row>
     </div>
@@ -50,39 +48,22 @@
         cancel-text="取消"
         :title="modalTitle"
         :styles="{top: '20px'}">
-      <Form ref='teacherForm' :model='teacherForm' :rules='teacherFormRule' :label-width='90'>
-        <FormItem label='用户名' prop='userName'>
-          <Input v-model='teacherForm.userName' :maxlength=50 placeholder='请输入用户名' style="width: 550px;"/>
+      <Form ref='classroomForm' :model='classroomForm' :rules='classroomFormRule' :label-width='90'>
+        <FormItem label='教室名称' prop='className'>
+          <Input v-model='classroomForm.className' :maxlength=50 placeholder='请输入用户名' style="width: 550px;"/>
         </FormItem>
-        <FormItem label='姓名' prop='realName'>
-          <Input v-model='teacherForm.realName' :maxlength=50 placeholder='请输入真实姓名' style="width: 550px;"/>
+        <FormItem label='课程' prop='curriculum'>
+          <Input v-model='classroomForm.curriculum' :maxlength=50 placeholder='请输入真实姓名' style="width: 550px;"/>
         </FormItem>
-        <FormItem label='性别' prop='gender'>
-          <i-select placeholder="请选择性别" :autosize='{minRows: 2,maxRows: 5}'
-            :maxlength=500 style="width: 550px;"v-model='teacherForm.gender'>
-              <i-option :value="0">男</i-option>
-              <i-option :value="1">女</i-option>
-          </i-select>
-        </FormItem>
-        <FormItem label='密码' prop='password'>
-          <Input type="password" v-model='teacherForm.password' :maxlength=500 style="width: 550px;"
+        <FormItem label='管理老师' prop='teacherId'>
+          <Input v-model='classroomForm.teacherId'  :maxlength=500 style="width: 550px;"
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
         </FormItem>
-        <FormItem label='确认密码' prop='pwdCheck' v-show="isShow">
-          <Input type="password" :maxlength=500 style="width: 550px;" v-model='teacherForm.pwdCheck'
-                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
-        </FormItem>
-        <FormItem label='工作号码' prop='officePhone'>
-          <Input v-model='teacherForm.officePhone'  :maxlength=500 style="width: 550px;"
-                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
-        </FormItem>
-        <FormItem label='电话号码' prop='mobilePhone'>
-          <Input v-model='teacherForm.mobilePhone'  :maxlength=500 style="width: 550px;"
-                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
-        </FormItem>
-        <FormItem label='邮箱' prop='email'>
-          <Input v-model='teacherForm.email' :maxlength=500 style="width: 550px;"
-                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
+        <FormItem label='开班时间' prop='classStartTime'>
+          <!-- <Input v-model='classroomForm.classStartTime' :maxlength=500 style="width: 550px;"
+                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/> -->
+          <Date-picker type="date" placeholder="选择日期" :maxlength=500 style="width: 550px;" 
+            v-model='classroomForm.classStartTime'></Date-picker>
         </FormItem>
       </Form>
       <div slot="footer">
@@ -108,31 +89,16 @@
 </template>
 <script>
   export default {
-    name: 'teacher',
+    name: 'classroom',
     data() {
-      const pwdCheckValidate = (rule, value, callback) => {
-            if (this.teacherForm.password != '' && value == '') {
-                callback(new Error('确认密码不能为空'));
-            } else if (this.teacherForm.password != value) {
-                callback(new Error('新密码和确认密码应相同'));
-            } else {
-                callback();
-            }
-        };
       return {
-        searchModel: undefined,
-        teacherForm: {
-          userName: undefined,
-          realName: undefined,
-          password: undefined,
-          mobilePhone: undefined,
-          officePhone: undefined,
-          gender: undefined,
-          email: undefined,
-          pwdCheck: undefined,
+        classroomForm: {
+          className: undefined,
+          curriculum: undefined,
+          teacherId: undefined,
+          classStartTime: undefined,
         },
-        
-        teacherFormRule: {
+        classroomFormRule: {
           userName: [
             { required: true, message: '用户名不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
@@ -141,19 +107,15 @@
             { required: true, message: '姓名不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
-          // gender: [
-          //   { required: true, message: '性别不能为空.', trigger: 'blur' },
-          //   { type: 'string', max: 255, message: 'Name最多255字符', trigger: 'blur' },
-          // ],
+          gender: [
+            { required: true, message: '性别不能为空.', trigger: 'blur' },
+            { type: 'string', max: 255, message: 'Name最多255字符', trigger: 'blur' },
+          ],
           password: [
             { required: true, message: '密码不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: '密码最多255字符', trigger: 'blur' },
-          ],
-          pwdCheck:[
-            {required: true, validator: pwdCheckValidate, trigger: 'blur'}
           ]
         },
-        isShow:true,
         loading: false,
         keepalive: false,
         isSaving: false,
@@ -168,32 +130,10 @@
         deleteIndex: '',
         columns: [
           { type: 'index', title: '序号', width: 60, align: 'center' },
-          { title: '用户名', key: 'userName', align: 'center' },
-          { title: '姓名', key: 'realName', align: 'center' },
-          { title: '性别', key: 'gender',
-            render: (h, params) => {
-                              if(params.row.gender=='0')
-                                  return h('div', [
-                                h('Icon', {
-                                    props: {
-                                        type: 'person'
-                                    }
-                                }),
-                                h('strong', '男')
-                            ]);
-                              if(params.row.gender=='1')
-                                  return h('div', [
-                                h('Icon', {
-                                    props: {
-                                        type: 'person'
-                                    }
-                                }),
-                                h('strong','女')
-                            ]);
-                              }, align: 'center' },
-          { title: '工作号码', key: 'officePhone', align: 'center' },
-          { title: '电话号码', key: 'mobilePhone', align: 'center' },
-          { title: '邮箱', key: 'email', align: 'center' },
+          { title: '教室名', key: 'className', align: 'center' },
+          { title: '课程', key: 'curriculum', align: 'center' },
+          { title: '管理老师', key: 'teacherId', align: 'center' },
+          { title: '开班时间', key: 'classStartTime', align: 'center' },
           {
             title: '操作',
             align: 'center',
@@ -212,23 +152,22 @@
         const self = this;
         const params = {
           page: this.pageInfo.pageNum || 1,
-          size: this.pageInfo.pageSize || 10,
-          name: this.searchModel,
+          size: this.pageInfo.pageSize || 10
         };
-        this.$http.get('/teacher/name', params).then((res) => {
+        this.$http.get('/class/room', params).then((res) => {
           self.loading = false;
           if (res.code === 200) {
             const result = res.data;
             self.data = result && result.list;
             self.pageInfo.total = result && result.total;
-            // for (let i = 0; i < self.data.length; i++) {
-            //    if(self.data[i].gender=='0'){
-            //      self.data[i].gender='男'
-            //    }
-            //    else{
-            //      self.data[i].gender='女';
-            //    }
-            //   }
+            for (let i = 0; i < self.data.length; i++) {
+               if(self.data[i].gender=='0'){
+                 self.data[i].gender='男'
+               }
+               else{
+                 self.data[i].gender='女';
+               }
+              }
           } else {
             self.$Message.error('获取数据失败！' + res.code);
           }
@@ -246,16 +185,12 @@
       },
 
       getCheckMenuList(list) {
-        this.teacherForm.menuIds = [];
+        this.classroomForm.menuIds = [];
         if (list) {
           list.forEach(item => {
-            this.teacherForm.menuIds.push(item.id);
+            this.classroomForm.menuIds.push(item.id);
           })
         }
-      },
-      reloadList() {
-      this.pageInfo.pageNum = 1;
-      this.getList();
       },
 
       resetCheckMenu() {
@@ -296,39 +231,34 @@
       },
 
       add() {
-        this.isShow = true,
         this.isSaving = false;
-        this.$refs.teacherForm.resetFields();
-        this.modalTitle = '添加教师信息';
-        this.teacherForm = {
-          userName: undefined,
-          realName: undefined,
-          password: undefined,
-          mobilePhone: undefined,
-          officePhone: undefined,
-          gender: undefined,
-          email: undefined,
+        this.$refs.classroomForm.resetFields();
+        this.modalTitle = '添加教室信息';
+        this.classroomForm = {
+          className: undefined,
+          curriculum: undefined,
+          teacherId: undefined,
+          classStartTime: undefined,
         };
         this.editModal = true;
       },
 
       edit(index) {
-        this.isShow=false,
         this.isSaving = false;
         const self = this;
-        this.$refs.teacherForm.resetFields();
-        this.modalTitle = '编辑教师信息';
+        this.$refs.classroomForm.resetFields();
+        this.modalTitle = '编辑学生信息';
         this.editModal = true;
-        this.$http.get('/teacher/' + self.data[index].id, {}).then((res) => {
+        this.$http.get('/class/room/' + self.data[index].id, {}).then((res) => {
           if (res.code === 200) {
-            self.teacherForm = res.data;
-            console.log(self.teacherForm.menuIds);
-            if (self.teacherForm.menuIds && self.teacherForm.menuIds.length > 0) {
+            self.classroomForm = res.data;
+            console.log(self.classroomForm.menuIds);
+            if (self.classroomForm.menuIds && self.classroomForm.menuIds.length > 0) {
               for (let key in self.originMenu) {
                 self.originMenu[key].forEach(item => {
                   item.checked = false;
-                  for (let i=0; i<self.teacherForm.menuIds.length; i++) {
-                    if (item.id === self.teacherForm.menuIds[i]) {
+                  for (let i=0; i<self.classroomForm.menuIds.length; i++) {
+                    if (item.id === self.classroomForm.menuIds[i]) {
                       item.checked = true;
                     }
                   }
@@ -350,11 +280,11 @@
       handleSubmit() {
         this.isSaving = true;
         let self = this;
-        console.log(this.teacherForm.id);
-        this.$refs.teacherForm.validate((valid) => {
+        console.log(this.classroomForm.id);
+        this.$refs.classroomForm.validate((valid) => {
           if (valid) {
-             if (this.teacherForm.id) {
-              this.$http.put('/teacher', self.teacherForm).then((res) => {
+             if (this.classroomForm.id) {
+              this.$http.put('/class/room', self.classroomForm).then((res) => {
                 if (res.code === 200) {
                   self.isSaving = false;
                   self.editModal = false;
@@ -365,7 +295,7 @@
                 }
               })
             } else {
-              this.$http.post('/teacher', self.teacherForm).then((res) => {
+              this.$http.post('/class/room', self.classroomForm).then((res) => {
                 if (res.code === 200) {
                   self.isSaving = false;
                   self.editModal = false;
@@ -394,7 +324,7 @@
       deleteItem() {
         this.isDeleting = true;
         const self = this;
-        this.$http.delete('/teacher/' + self.data[self.deleteIndex].id, {}).then((res) => {
+        this.$http.delete('/class/room/' + self.data[self.deleteIndex].id, {}).then((res) => {
           if (res.code === 200) {
             self.isDeleting = false;
             self.deleteModal = false;
