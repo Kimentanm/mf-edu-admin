@@ -7,24 +7,26 @@ import ownSpace from './ownSpace'
 import teacherRouter from './teacherRouter'
 import studentRouter from './studentRouter'
 import classroomRouter from './classroomRouter'
+import permissionRouter from "./permissionRouter";
 // *** insert import here *** // // don't change this line
 
 export default {
-	path: '/system',
-	name: '系统管理',
-	component: Main,
-	role: ['ROLE_ADMIN'],
-	meta: {
-    icon: 'ios-cog',
-	},
-	children: [
-    userRouter,
-		roleRouter,
-    codegroupRouter,
-		codeRouter,
-	ownSpace,
-	teacherRouter,
-	studentRouter,
-	classroomRouter
-	]
+    path: '/system',
+    name: '系统管理',
+    component: Main,
+    role: ['ROLE_ADMIN'],
+    meta: {
+        icon: 'ios-cog',
+    },
+    children: [
+        userRouter,
+        roleRouter,
+        codegroupRouter,
+        codeRouter,
+        ownSpace,
+        teacherRouter,
+        studentRouter,
+        classroomRouter,
+        permissionRouter
+    ]
 }
