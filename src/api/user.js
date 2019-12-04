@@ -1,9 +1,10 @@
 import http from '@/libs/http.request'
 
-export const login = ({ username, password }) => {
+export const login = ({ username, password, type }) => {
   const data = {
     username,
-    password
+    password,
+    type
   };
   return http.post('authenticate', data)
 };

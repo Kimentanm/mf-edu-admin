@@ -62,11 +62,11 @@
               <i-option :value="1">女</i-option>
           </i-select>
         </FormItem>
-        <FormItem label='密码' prop='password' >
+        <FormItem label='密码' prop='password' v-if="isShow">
           <Input  type="password" v-model='studentForm.password' :maxlength=500 style="width: 550px;"
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
         </FormItem>
-        <FormItem label='确认密码' prop='pwdCheck'v-show="isShow">
+        <FormItem label='确认密码' prop='pwdCheck' v-if="isShow">
           <Input type="password" :maxlength=500 style="width: 550px;" v-model='studentForm.pwdCheck'
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
         </FormItem>
@@ -113,6 +113,17 @@
                 callback();
             }
         };
+      const userNameCheckValidate = (rule, value, callback) => {
+        if (value) {
+          if (value.indexOf(":") !== -1) {
+            callback(new Error('用户名中不能包含特殊字符'));
+          } else {
+            callback();
+          }
+        } else {
+          callback(new Error('用户名不能为空'));
+        }
+      };
       return {
         studentForm: {
           userName: undefined,
@@ -125,7 +136,7 @@
         },
         studentFormRule: {
           userName: [
-            { required: true, message: '用户名不能为空.', trigger: 'blur' },
+            { required: true, validator: userNameCheckValidate, trigger: 'blur' },
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
           realName: [
@@ -133,8 +144,7 @@
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
           gender: [
-            { required: true, message: '性别不能为空.', trigger: 'blur' },
-            { type: 'string', max: 255, message: 'Name最多255字符', trigger: 'blur' },
+            { required: true, type: 'number', message: '性别不能为空.', trigger: 'change' },
           ],
           password: [
             { required: true, message: '密码不能为空.', trigger: 'blur' },
@@ -167,7 +177,7 @@
                                     return h('div', [
                                   h('Icon', {
                                       props: {
-                                          type: 'person'
+                                          type: 'ios-man'
                                       }
                                   }),
                                   h('strong', '男')
@@ -176,7 +186,7 @@
                                     return h('div', [
                                   h('Icon', {
                                       props: {
-                                          type: 'person'
+                                          type: 'ios-woman'
                                       }
                                   }),
                                   h('strong','女')
@@ -326,30 +336,33 @@
       handleSubmit() {
         this.isSaving = true;
         let self = this;
-        console.log(this.studentForm.id);
         this.$refs.studentForm.validate((valid) => {
           if (valid) {
              if (this.studentForm.id) {
               this.$http.put('/student', self.studentForm).then((res) => {
                 if (res.code === 200) {
-                  self.isSaving = false;
                   self.editModal = false;
                   self.reloadList();
                   self.$Message.success('更新成功！');
-                } else {
+                } else if (res.code === 800) {
+                  self.$Message.error('当前学生用户名已存在');
+                }  else {
                   self.$Message.error('更新失败！' + res.code);
                 }
+                self.isSaving = false;
               })
             } else {
               this.$http.post('/student', self.studentForm).then((res) => {
                 if (res.code === 200) {
-                  self.isSaving = false;
                   self.editModal = false;
                   self.reloadList();
                   self.$Message.success('添加成功！');
+                } else if (res.code === 800) {
+                  self.$Message.error('当前学生用户名已存在');
                 } else {
                   self.$Message.error('添加失败！' + res.code);
                 }
+                self.isSaving = false;
               })
             }
           }else {
