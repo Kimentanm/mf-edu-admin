@@ -9,7 +9,7 @@
     <div class="smart-crud-top">
       <Row>
         <Col span="24">
-        <Button class="" type="primary" @click="add">添加</Button>
+        <Button class="" type="primary" @click="add">创建</Button>
         </Col>
       </Row>
     </div>
@@ -49,21 +49,24 @@
         :title="modalTitle"
         :styles="{top: '20px'}">
       <Form ref='classroomForm' :model='classroomForm' :rules='classroomFormRule' :label-width='90'>
+        <FormItem label='教室编号' prop='classCode'>
+          <Input v-model='classroomForm.classCode' :maxlength=50 placeholder='请输入教室编号' style="width: 550px;"/>
+        </FormItem>
         <FormItem label='教室名称' prop='className'>
-          <Input v-model='classroomForm.className' :maxlength=50 placeholder='请输入用户名' style="width: 550px;"/>
+          <Input v-model='classroomForm.className' :maxlength=50 placeholder='请输入教室名称' style="width: 550px;"/>
         </FormItem>
         <FormItem label='课程' prop='curriculum'>
-          <Input v-model='classroomForm.curriculum' :maxlength=50 placeholder='请输入真实姓名' style="width: 550px;"/>
+          <Input v-model='classroomForm.curriculum' :maxlength=50 placeholder='请输入课程' style="width: 550px;"/>
         </FormItem>
-        <FormItem label='管理老师' prop='teacherId'>
-          <Input v-model='classroomForm.teacherId'  :maxlength=500 style="width: 550px;"
-                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
+        <FormItem label='选择教师' prop='teacherId'>
+          <Select v-model='classroomForm.teacherId' style="width:550px" placeholder='请选择教师'>
+            <Option v-for="item in teacherList" :value="item.id" :key="item.userName">{{ item.userName }}</Option>
+          </Select>
         </FormItem>
-        <FormItem label='开班时间' prop='classStartTime'>
-          <!-- <Input v-model='classroomForm.classStartTime' :maxlength=500 style="width: 550px;"
-                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/> -->
-          <Date-picker type="date" placeholder="选择日期" :maxlength=500 style="width: 550px;" 
-            v-model='classroomForm.classStartTime'></Date-picker>
+        <FormItem label='选择学生' prop='teacherId'>
+          <Select v-model='classroomForm.studentId' style="width:550px" placeholder='请选择学生'>
+            <Option v-for="item in studentList" :value="item.id" :key="item.userName">{{ item.userName }}</Option>
+          </Select>
         </FormItem>
       </Form>
       <div slot="footer">
@@ -75,10 +78,10 @@
     <Modal v-model="deleteModal" width="360">
       <p slot="header" style="color:#f60;text-align:center">
         <Icon type="information-circled"></Icon>
-        <span>删除教师</span>
+        <span>删除教室</span>
       </p>
       <div style="text-align:center">
-        <p>删除该教师，将无法恢复！</p>
+        <p>删除该教室，将无法恢复！</p>
         <p>是否删除?</p>
       </div>
       <div slot="footer">
@@ -93,27 +96,24 @@
     data() {
       return {
         classroomForm: {
+          classCode: undefined,
+          studentId: undefined,
           className: undefined,
           curriculum: undefined,
           teacherId: undefined,
-          classStartTime: undefined,
         },
         classroomFormRule: {
-          userName: [
-            { required: true, message: '用户名不能为空.', trigger: 'blur' },
+          classCode: [
+            { required: true, message: '教室编号不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
-          realName: [
-            { required: true, message: '姓名不能为空.', trigger: 'blur' },
+          className: [
+            { required: true, message: '教室名不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
-          gender: [
-            { required: true, message: '性别不能为空.', trigger: 'blur' },
+          curriculum: [
+            { required: true, message: '课程不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: 'Name最多255字符', trigger: 'blur' },
-          ],
-          password: [
-            { required: true, message: '密码不能为空.', trigger: 'blur' },
-            { type: 'string', max: 255, message: '密码最多255字符', trigger: 'blur' },
           ]
         },
         loading: false,
@@ -130,10 +130,11 @@
         deleteIndex: '',
         columns: [
           { type: 'index', title: '序号', width: 60, align: 'center' },
+          { title: '教室编号', key: 'classCode', align: 'center' },
           { title: '教室名', key: 'className', align: 'center' },
           { title: '课程', key: 'curriculum', align: 'center' },
           { title: '管理老师', key: 'teacherId', align: 'center' },
-          { title: '开班时间', key: 'classStartTime', align: 'center' },
+          { title: '学生ID', key: 'studentId', align: 'center' },
           {
             title: '操作',
             align: 'center',
@@ -143,7 +144,9 @@
             }
           }
         ],
-        data: []
+        data: [],
+        teacherList:[],
+        studentList:[]
       }
     },
     methods: {
@@ -175,22 +178,31 @@
         })
       },
 
-      getMenuList() {
+       getTeacherList() {
         const self = this;
-        this.$http.get('/menu/listMenuBO').then((res) => {
+        this.$http.get('/teacher').then((res) => {
           if (res.code === 200) {
-            self.originMenu = res.data;
+            const result = res.data;
+            self.teacherList = result && result.list;
+          } else {
+            self.$Message.error('获取数据失败！' + res.code);
           }
+
         })
       },
 
-      getCheckMenuList(list) {
-        this.classroomForm.menuIds = [];
-        if (list) {
-          list.forEach(item => {
-            this.classroomForm.menuIds.push(item.id);
-          })
-        }
+      getStuList(){
+        const self = this;
+        this.$http.get('/student').then((res) => {
+          if (res.code === 200) {
+            const result = res.data;
+            self.studentList = result && result.list;
+          } else {
+            self.$Message.error('获取数据失败！' + res.code);
+          }
+
+        })
+
       },
 
       resetCheckMenu() {
@@ -231,10 +243,14 @@
       },
 
       add() {
+        this.getTeacherList();
+        this.getStuList();
         this.isSaving = false;
         this.$refs.classroomForm.resetFields();
         this.modalTitle = '添加教室信息';
         this.classroomForm = {
+          classCode: undefined,
+          studentId: undefined,
           className: undefined,
           curriculum: undefined,
           teacherId: undefined,
