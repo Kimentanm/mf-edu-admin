@@ -133,8 +133,19 @@
           { title: '教室编号', key: 'classCode', align: 'center' },
           { title: '教室名', key: 'className', align: 'center' },
           { title: '课程', key: 'curriculum', align: 'center' },
-          { title: '管理老师', key: 'teacherId', align: 'center' },
-          { title: '学生ID', key: 'studentId', align: 'center' },
+          {
+            title: '教师姓名',
+            align: 'center',
+            render: (h, params) => {
+              return h('span', params.row.teacher?.realName);
+            }
+          },
+          {
+            title: '学生姓名',
+            align: 'center',
+            render: (h, params) => {
+              return h('span', params.row.student?.realName);
+            } },
           {
             title: '操作',
             align: 'center',
