@@ -78,6 +78,20 @@
           <Input v-model='studentForm.email' :maxlength=500 style="width: 550px;"
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
         </FormItem>
+        <FormItem label="头像:" prop='imageUrl' style="margin-top: 25px">
+          <div>
+            <div class="margin-top-10  margin-top-10Again" v-show="fileChoose">
+              <img :src="studentForm.imageUrl" class="imgShow"/>
+            </div>
+            <div>
+              <div class="fileInput">
+                <input type="file" accept="image/png, image/jpeg, image/gif, image/jpg"
+                       @change="handleChange" id="fileinput"/>
+                <span>选择图片</span>
+              </div>
+            </div>
+          </div>
+        </FormItem>
       </Form>
       <div slot="footer">
         <Button @click="handleReset()" style="margin-left: 8px">取消</Button>
@@ -98,10 +112,31 @@
         <Button type="error" size="large" long :loading="isDeleting" @click="deleteItem">删除</Button>
       </div>
     </Modal>
+    <Modal v-model="showCropedImage">
+      <div class="cropperAgain">
+        <vueCropper
+            ref="cropper"
+            :img="cut.Img"
+            :outputSize="cut.size"
+            :outputType="cut.outputType"
+            :autoCrop="cut.autoCrop"
+            :autoCropWidth="cut.autoCropWidth"
+            :autoCropHeight="cut.autoCropHeight"
+        >
+        </vueCropper>
+      </div>
+      <div slot="footer">
+        <Button @click="cancelReset()" style="margin-left: 8px">取消</Button>
+        <Button type="primary" icon="crop" @click="handleCrop" class="pictureButton">裁剪</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
+ import { cropperPicture } from '../../libs/util';
+  import VueCropper from 'vue-cropper'
   export default {
+    components: { VueCropper },
     name: 'student',
     data() {
       const pwdCheckValidate = (rule, value, callback) => {
@@ -129,6 +164,7 @@
           userName: undefined,
           realName: undefined,
           password: undefined,
+           imageUrl: undefined,
           mobilePhone: undefined,
           gender: undefined,
           email: undefined,
@@ -154,7 +190,16 @@
             {required: true, validator: pwdCheckValidate, trigger: 'blur'}
           ]
         },
+        cut: {
+          size: 1,
+          Img: '',
+          outputType: 'jpeg || png || web',
+          autoCrop: true,
+          autoCropWidth: 200,
+          autoCropHeight: 200
+        },
         isShow:true,
+        fileChoose: false,
         loading: false,
         keepalive: false,
         isSaving: false,
@@ -166,6 +211,7 @@
         permissionList: [],
         editModal: false,
         deleteModal: false,
+        showCropedImage: false,
         deleteIndex: '',
         columns: [
           { type: 'index', title: '序号', width: 60, align: 'center' },
@@ -244,7 +290,42 @@
           })
         }
       },
-
+       handleChange(e) {
+        this.showCropedImage = true;
+        let reader = cropperPicture(e);
+        console.log(reader);
+        reader.onload = (event) => {
+          let data = event.target.result;
+          reader.onload = null;
+          this.cut.Img = data;
+          this.clear();
+        };
+      },
+       handleCrop() {
+        this.showCropedImage = false;
+        let self = this;
+        // var fd = new FormData();
+        // 获取截图的blob数据
+        this.$refs.cropper.getCropBlob((data) => {
+          var fd = new FormData();
+          fd.append('picturefile', data, 'cropped.png');
+          const config = {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          };
+          this.$http.post('/common/file/upload', fd, config).then(resp => {
+            if (resp.code === 200) {
+              self.studentForm.imageUrl = resp.data.location;
+              self.fileChoose = true;
+            }
+          }).catch(err => {
+            console.log(err)
+          });
+        })
+      },
+       cancelReset() {
+        this.showCropedImage = false;
+        console.log('cancelReset');
+      },
       resetCheckMenu() {
         const self = this;
         for (let key in self.originMenu) {
@@ -284,6 +365,7 @@
 
       add() {
         this.isSaving = false;
+        this.fileChoose = false;
         this.isShow = true;
         this.$refs.studentForm.resetFields();
         this.modalTitle = '添加学生信息';
@@ -291,6 +373,7 @@
           userName: undefined,
           realName: undefined,
           password: undefined,
+          imageUrl: undefined,
           mobilePhone: undefined,
           gender: undefined,
           email: undefined,
@@ -308,7 +391,9 @@
         this.$http.get('/student/' + self.data[index].id, {}).then((res) => {
           if (res.code === 200) {
             self.studentForm = res.data;
-            console.log(self.studentForm.menuIds);
+            if (self.studentForm.imageUrl) {
+              self.fileChoose = true;
+            }
             if (self.studentForm.menuIds && self.studentForm.menuIds.length > 0) {
               for (let key in self.originMenu) {
                 self.originMenu[key].forEach(item => {

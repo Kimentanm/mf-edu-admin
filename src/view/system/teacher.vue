@@ -84,6 +84,20 @@
                     <Input v-model='teacherForm.email' :maxlength=500 style="width: 550px;"
                            :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
                 </FormItem>
+                <FormItem label="头像:" prop='imageUrl' style="margin-top: 25px">
+                    <div>
+                        <div class="margin-top-10  margin-top-10Again" v-show="fileChoose">
+                        <img :src="teacherForm.imageUrl" class="imgShow"/>
+                        </div>
+                        <div>
+                        <div class="fileInput">
+                            <input type="file" accept="image/png, image/jpeg, image/gif, image/jpg"
+                                @change="handleChange" id="fileinput"/>
+                            <span>选择图片</span>
+                        </div>
+                        </div>
+                    </div>
+                </FormItem>
             </Form>
             <div slot="footer">
                 <Button @click="handleReset()" style="margin-left: 8px">取消</Button>
@@ -104,10 +118,31 @@
                 <Button type="error" size="large" long :loading="isDeleting" @click="deleteItem">删除</Button>
             </div>
         </Modal>
+        <Modal v-model="showCropedImage">
+            <div class="cropperAgain">
+                <vueCropper
+                    ref="cropper"
+                    :img="cut.Img"
+                    :outputSize="cut.size"
+                    :outputType="cut.outputType"
+                    :autoCrop="cut.autoCrop"
+                    :autoCropWidth="cut.autoCropWidth"
+                    :autoCropHeight="cut.autoCropHeight"
+                >
+                </vueCropper>
+            </div>
+            <div slot="footer">
+                <Button @click="cancelReset()" style="margin-left: 8px">取消</Button>
+                <Button type="primary" icon="crop" @click="handleCrop" class="pictureButton">裁剪</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 <script>
+import { cropperPicture } from '../../libs/util';
+import VueCropper from 'vue-cropper'
     export default {
+        components: { VueCropper },
         name: 'teacher',
         data() {
             const pwdCheckValidate = (rule, value, callback) => {
@@ -163,6 +198,16 @@
                         {required: true, validator: pwdCheckValidate, trigger: 'blur'}
                     ]
                 },
+                cut: {
+                size: 1,
+                Img: '',
+                outputType: 'jpeg || png || web',
+                autoCrop: true,
+                autoCropWidth: 200,
+                autoCropHeight: 200
+                },
+                showCropedImage: false,
+                fileChoose: false,
                 isShow: true,
                 loading: false,
                 keepalive: false,
@@ -300,8 +345,9 @@
             },
 
             add() {
-                this.isShow = true,
-                    this.isSaving = false;
+                this.isShow = true;
+                this.fileChoose = false;
+                this.isSaving = false;
                 this.$refs.teacherForm.resetFields();
                 this.modalTitle = '添加教师信息';
                 this.teacherForm = {
@@ -326,7 +372,9 @@
                 this.$http.get('/teacher/' + self.data[index].id, {}).then((res) => {
                     if (res.code === 200) {
                         self.teacherForm = res.data;
-                        console.log(self.teacherForm.menuIds);
+                        if (self.teacherForm.imageUrl) {
+                        self.fileChoose = true;
+                        }
                         if (self.teacherForm.menuIds && self.teacherForm.menuIds.length > 0) {
                             for (let key in self.originMenu) {
                                 self.originMenu[key].forEach(item => {
@@ -392,6 +440,38 @@
             handleReset() {
                 this.editModal = false;
                 console.log('handleReset');
+                },
+                handleChange(e) {
+                this.showCropedImage = true;
+                let reader = cropperPicture(e);
+                console.log(reader);
+                reader.onload = (event) => {
+                let data = event.target.result;
+                reader.onload = null;
+                this.cut.Img = data;
+                this.clear();
+                };
+            },
+            handleCrop() {
+                this.showCropedImage = false;
+                let self = this;
+                // var fd = new FormData();
+                // 获取截图的blob数据
+                this.$refs.cropper.getCropBlob((data) => {
+                var fd = new FormData();
+                fd.append('picturefile', data, 'cropped.png');
+                const config = {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                };
+                this.$http.post('/common/file/upload', fd, config).then(resp => {
+                    if (resp.code === 200) {
+                    self.teacherForm.imageUrl = resp.data.location;
+                    self.fileChoose = true;
+                    }
+                }).catch(err => {
+                    console.log(err)
+                });
+                })
             },
             remove(index) {
                 this.deleteModal = true;
