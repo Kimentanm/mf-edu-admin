@@ -64,7 +64,8 @@
             return {
                 form: {
                     username: '',
-                    password: ''
+                    password: '',
+                    type: 'ADMIN'
                 },
                 loginButtonTest: '登录',
                 registerButtonText: '注册',

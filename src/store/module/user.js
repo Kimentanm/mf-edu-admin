@@ -45,7 +45,8 @@ export default {
         console.log(userForm)
         login({
           username: userForm.username,
-          password: userForm.password
+          password: userForm.password,
+          type: userForm.type
         }).then(res => {
           if (res.code === 200) {
             commit('setToken', res.data);

@@ -50,6 +50,7 @@ module.exports = {
     proxy: {
       '/api': {
         target: 'http://localhost:8081/mf-edu',
+        // target: 'http://111.231.135.83/api',
         changeOrigin: true,
         ws: true,
         pathRewrite: {

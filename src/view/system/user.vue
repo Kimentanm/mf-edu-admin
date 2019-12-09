@@ -133,6 +133,18 @@
   import VueCropper from 'vue-cropper'
   import { cropperPicture } from '../../libs/util';
 
+  const userNameCheckValidate = (rule, value, callback) => {
+    if (value) {
+      if (value.indexOf(":") !== -1) {
+        callback(new Error('用户名中不能包含特殊字符'));
+      } else {
+        callback();
+      }
+    } else {
+      callback(new Error('用户名不能为空'));
+    }
+  };
+
   export default {
     components: { CodeSelect, CodeName, VueCropper },
     name: 'user',
@@ -153,34 +165,35 @@
         },
         userFormRule: {
           mobile: [
-            { required: true, message: 'Mobile不能为空.', trigger: 'blur' },
+            { required: true, message: '联系方式不能为空.', trigger: 'blur' },
             { type: 'string', max: 50, message: 'Mobile最多50字符', trigger: 'blur' },
           ],
           loginName: [
-            { type: 'string', max: 50, message: 'LoginName最多50字符', trigger: 'blur' },
+            { required: true, validator: userNameCheckValidate, trigger: 'blur' },
+            { type: 'string', max: 50, message: '登录名最多50字符', trigger: 'blur' },
           ],
           name: [
-            { required: true, message: 'Name不能为空.', trigger: 'blur' },
-            { type: 'string', max: 50, message: 'Name最多50字符', trigger: 'blur' },
+            { required: true, message: '用户名不能为空',  trigger: 'blur' },
+            { type: 'string', max: 50, message: '用户名最多50字符', trigger: 'blur' },
           ],
           email: [
-            { required: true, message: 'Email不能为空.', trigger: 'blur' },
-            { type: 'string', max: 100, message: 'Email最多100字符', trigger: 'blur' },
+            { required: true, message: '邮箱不能为空.', trigger: 'blur' },
+            { type: 'string', max: 100, message: '邮箱最多100字符', trigger: 'blur' },
             { type: 'email', message: '邮箱格式不正确', trigger: 'blur' },
           ],
           imageUrl: [
-            { required: true, message: 'ImageUrl不能为空.', trigger: 'blur' },
-            { type: 'string', max: 256, message: 'ImageUrl最多256字符', trigger: 'blur' },
+            { required: true, message: '头像不能为空.', trigger: 'blur' },
+            { type: 'string', max: 256, message: '头像最多256字符', trigger: 'blur' },
           ],
           status: [
             { type: 'string', max: 10, message: 'Status最多10字符', trigger: 'blur' },
           ],
           password: [
-            { required: true, message: 'Password不能为空.', trigger: 'blur' },
-            { type: 'string', max: 500, message: 'Password最多500字符', trigger: 'blur' },
+            { required: true, message: '密码不能为空.', trigger: 'blur' },
+            { type: 'string', max: 500, message: '密码最多500字符', trigger: 'blur' },
           ],
           user_type: [
-            { type: 'string', max: 20, message: 'Type最多20字符', trigger: 'blur' },
+            { type: 'string', max: 20, message: '用户类型最多20字符', trigger: 'blur' },
           ],
           roleIds: [
             { required: true, type: 'array', max: 20, message: '角色不能为空', trigger: 'change' },
@@ -251,7 +264,6 @@
                   result += ",";
                 }
               }
-              console.log(result)
               return h('span', result);
             }
           },
