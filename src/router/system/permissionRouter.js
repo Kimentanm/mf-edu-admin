@@ -6,5 +6,5 @@ export default {
         title: '权限管理',
         hideInMenu:false
     },
-    component: () => import(/* webpackChunkName: 'system' */ '@/view/system/permission.vue')
+    component: () => import(/* webpackChunkName: 'system' */ '@/view/system/permissionTree.vue')
 }
