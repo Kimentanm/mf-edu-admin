@@ -219,7 +219,9 @@
                 console.log(res);
                 res.forEach(item => {
                          if(item.children){
-                                item.children.forEach(item2 =>{handleData(item2.children)})
+                            item.children.forEach(item2 =>{
+                                handleData(item2.children)
+                            })
                                 
                             }
                         else{
