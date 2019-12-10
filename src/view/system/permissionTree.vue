@@ -1,7 +1,7 @@
 <template>
     <Row :gutter="0">
         <Col span="16">
-             <Tree :data="data5" :render="renderContent" @on-select-change="choice" ref="tree4"></Tree>
+             <Tree :data="data5" :render="renderContent" ref="tree4"></Tree>
         </Col>
         <Col span="8">
             <Card style="width:500 px">
@@ -102,7 +102,16 @@
                         width: '100%'
                     }
                 }, [
-                    h('span', [
+                    h('span', {
+                        style: {
+                            cursor: 'pointer'
+                        },
+                        on: {
+                            click: () => {
+                                this.choice();
+                            }
+                        },
+                    },[
                         h('Icon', {
                             props: {
                                 type: 'ios-paper-outline'
