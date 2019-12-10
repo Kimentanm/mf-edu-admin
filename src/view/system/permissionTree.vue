@@ -1,7 +1,7 @@
 <template>
     <Row :gutter="0">
         <Col span="16">
-             <Tree :data="data5" :render="renderContent"@on-check-change="choice" ref="tree4"></Tree>
+             <Tree :data="data5" :render="renderContent" @on-select-change="choice" ref="tree4"></Tree>
         </Col>
         <Col span="8">
             <Card style="width:500 px">
@@ -85,36 +85,7 @@
                                 ])
                             ]);
                         },
-                        children: [
-                            // {
-                            //     title: 'child 1-1',
-                            //     expand: true,
-                            //     children: [
-                            //         {
-                            //             title: 'leaf 1-1-1',
-                            //             expand: true
-                            //         },
-                            //         {
-                            //             title: 'leaf 1-1-2',
-                            //             expand: true
-                            //         }
-                            //     ]
-                            // },
-                            // {
-                            //     title: 'child 1-2',
-                            //     expand: true,
-                            //     children: [
-                            //         {
-                            //             title: 'leaf 1-2-1',
-                            //             expand: true
-                            //         },
-                            //         {
-                            //             title: 'leaf 1-2-1',
-                            //             expand: true
-                            //         }
-                            //     ]
-                            // }
-                        ]
+                        children: []
                     }
                 ],
                 buttonProps: {
@@ -185,54 +156,23 @@
                 const index = parent.children.indexOf(data);
                 parent.children.splice(index, 1);
             },
-            choice(data){
-        　　　　console.log(data); 
-        　　　　let choicesAll=this.$refs.tree4.getSelectedNodes;
-        　　　　console.log(choicesAll);
-        　　},
             getList(){
                 const self = this;
                 this.$http.get('/permission/permission-list').then((res) => {
                 if (res.code === 200) {
-                    // console.log(res.data);
-                    // res.data.children.forEach(item => {
-                    //      if(item.children){
-                    //             this.data5[0].children.push({
-                    //             children:item.children
-                    //             })
-                    //         }
-                    //     else{
-                    //         this.data5[0].children.push({
-                    //             title: item.description,
-                    //             expand: true
-                    //         })}
-                    //     })
-                    // console.log( self.data5[0].children);
-                    this.treeData=res.data.children;
-                    this.handleData(this.treeData);
+                    this.data5[0].children=res.data.children;
+                    if(this.treeData.children){
+                        this.handleData(this.treeData);
+                    }
+                     console.log( self.data5[0].children);
                 } else {
                     self.$Message.error('获取数据失败！' + res.code);
                 }
                 })
             },
-            handleData(res){
-                console.log(res);
-                res.forEach(item => {
-                         if(item.children){
-                            item.children.forEach(item2 =>{
-                                handleData(item2.children)
-                            })
-                                
-                            }
-                        else{
-                            this.data5[0].children.push({
-                                title: item.description,
-                                expand: true
-                            })}
-                    })
-                     console.log( this.data5[0].children);
+            choice(){
+                alert(123);
             }
-        
         },
          created() {
             this.getList();
