@@ -2,7 +2,9 @@
 <div>
     <Row :gutter="0">
         <Col span="16">
-             <Tree :data="data5" :render="renderContent" ref="tree4"></Tree>
+            <Card >
+                <Tree :data="data5" :render="renderContent" ref="tree4"></Tree>
+            </Card>
         </Col>
         <Col span="8">
             <Card style="width:500 px">
@@ -67,7 +69,7 @@
                                 h('span', [
                                     h('Icon', {
                                         props: {
-                                            type: 'ios-folder-outline'
+                                            type: 'ios-bowtie'
                                         },
                                         style: {
                                             marginRight: '8px'
