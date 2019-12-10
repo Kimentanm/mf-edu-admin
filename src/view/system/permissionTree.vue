@@ -8,11 +8,11 @@
             <Card style="width:500 px">
                 <p slot="title">查看</p>
                 <Form ref='permissionForm' :model='permissionForm' :label-width="80">
-                    <FormItem label="节点类型" prop="gender" v-model='permissionForm.reourceType'>
-                        <RadioGroup>
-                            <Radio label="male">菜单</Radio>
-                            <Radio label="female">元素</Radio>
-                            <Radio label="3223">数据</Radio>
+                    <FormItem label="节点类型" prop="gender" >
+                        <RadioGroup v-model='permissionForm.reourceType'>
+                            <Radio label="menu">菜单</Radio>
+                            <Radio label="element">元素</Radio>
+                            <Radio label="data">数据</Radio>
                         </RadioGroup>
                     </FormItem>
                     <FormItem label="权限编码" prop="passwd">
@@ -227,6 +227,7 @@
                 if (this.permissionForm.id) {
                     console.log(this.permissionForm.id);
                 this.$http.put('/permission', self.permissionForm).then((res) => {
+                    console.log(self.permissionForm);
                 if (res.code === 200) {
                   self.editModal = false;
                   self.getList();
