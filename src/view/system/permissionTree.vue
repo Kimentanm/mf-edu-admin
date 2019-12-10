@@ -1,4 +1,5 @@
 <template>
+<div>
     <Row :gutter="0">
         <Col span="16">
              <Tree :data="data5" :render="renderContent" ref="tree4"></Tree>
@@ -6,8 +7,8 @@
         <Col span="8">
             <Card style="width:500 px">
                 <p slot="title">查看</p>
-                <Form :label-width="80">
-                    <FormItem label="节点类型" prop="gender">
+                <Form ref='permissionForm' :model='permissionForm' :label-width="80">
+                    <FormItem label="节点类型" prop="gender" v-model='permissionForm.reourceType'>
                         <RadioGroup>
                             <Radio label="male">菜单</Radio>
                             <Radio label="female">元素</Radio>
@@ -15,24 +16,26 @@
                         </RadioGroup>
                     </FormItem>
                     <FormItem label="权限编码" prop="passwd">
-                        <Input type="text" ></Input>
+                        <Input type="text" v-model='permissionForm.permissionCode'></Input>
                     </FormItem>
                     <FormItem label="权限名称" prop="passwdCheck">
-                        <Input type="text" ></Input>
+                        <Input type="text" v-model='permissionForm.permissionName'></Input>
                     </FormItem>
                     <FormItem label="权限描述" prop="age">
-                        <Input type="textarea" ></Input>
+                        <Input type="textarea" v-model='permissionForm.description'></Input>
                     </FormItem>
                     <FormItem label="权限url" prop="age">
-                        <Input type="textarea" ></Input>
+                        <Input type="textarea" v-model='permissionForm.resourceUrl'></Input>
                     </FormItem>
                     <FormItem label="显示序列" prop="passwdCheck">
-                        <Input type="text" ></Input>
+                        <Input type="text" v-model='permissionForm.displaySort'></Input>
                     </FormItem>
                 </Form>
+                <Button type="success" long @click="save">保存</Button>
             </Card>
         </Col>
     </Row>
+    </div>
 </template>
 <script>
     export default {
@@ -40,7 +43,16 @@
          data () {
             return {
                 data:[],
-                treeData:[],
+                deleteModal: false,
+                permissionForm: {
+                    permissionCode: undefined,
+                    permissionName: undefined,
+                    description:undefined,
+                    reourceType: undefined,
+                    resourceUrl: undefined,
+                    displaySort: undefined,
+                    },
+                permissionUpload:[],
                 data5: [
                     {
                         title: '权限总菜单',
@@ -108,7 +120,7 @@
                         },
                         on: {
                             click: () => {
-                                this.choice();
+                                this.choice(data.id);
                             }
                         },
                     },[
@@ -152,35 +164,80 @@
                 ]);
             },
             append (data) {
-                const children = data.children || [];
-                children.push({
-                    title: 'appended node',
-                    expand: true
-                });
-                this.$set(data, 'children', children);
+                this.permissionUpload= {
+                    permissionCode: '0',
+                    permissionName: '新建权限',
+                    description: '新建权限',
+                    reourceType: '',
+                    resourceUrl: '',
+                    displaySort: '',
+                    parentPermissionId:data.id
+                    }
+                this.$http.post('/permission', this.permissionUpload).then(resp => {
+                    if (resp.code === 200) {
+                    this.getList();
+                    }
+                }).catch(err => {
+                    console.log(err)
+                });               
             },
             remove (root, node, data) {
-                const parentKey = root.find(el => el === node).parent;
-                const parent = root.find(el => el.nodeKey === parentKey).node;
-                const index = parent.children.indexOf(data);
-                parent.children.splice(index, 1);
+                // this.deleteModal = true;
+                this.$http.delete('/permission/' + data.id, {}).then((res) => {
+                if (res.code === 200) {
+                    this.getList();
+                    this.$Message.success('删除成功！');
+                } else {
+                    this.$Message.error('删除失败！' + res.code);
+                }
+                })
             },
             getList(){
                 const self = this;
                 this.$http.get('/permission/permission-list').then((res) => {
                 if (res.code === 200) {
                     this.data5[0].children=res.data.children;
-                    if(this.treeData.children){
-                        this.handleData(this.treeData);
-                    }
-                     console.log( self.data5[0].children);
                 } else {
                     self.$Message.error('获取数据失败！' + res.code);
                 }
                 })
             },
-            choice(){
-                alert(123);
+            choice(treeId){
+            this.$http.get('/permission/' + treeId, {}).then((res) => {
+                this.permissionForm=res.data;
+                })
+            },
+            deleteItem(){
+                this.isDeleting = true;
+                const self = this;
+                this.$http.delete('/permission/' + self.data[self.deleteIndex].id, {}).then((res) => {
+                if (res.code === 200) {
+                    self.isDeleting = false;
+                    self.deleteModal = false;
+                    self.reloadList();
+                    self.$Message.success('删除成功！');
+                } else {
+                    self.$Message.error('删除失败！' + res.code);
+                }
+                });
+
+            },
+            save(){
+                const self = this;
+                if (this.permissionForm.id) {
+                    console.log(this.permissionForm.id);
+                this.$http.put('/permission', self.permissionForm).then((res) => {
+                if (res.code === 200) {
+                  self.editModal = false;
+                  self.getList();
+                  self.$Message.success('更新成功！');
+                } else if (res.code === 800) {
+                  self.$Message.error('当前学生用户名已存在');
+                }  else {
+                  self.$Message.error('更新失败！' + res.code);
+                }
+              })
+            } 
             }
         },
          created() {
