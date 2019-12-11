@@ -1,10 +1,13 @@
 <template>
 <div>
-    <Row :gutter="0">
+    <Row :gutter="50">
         <Col span="16">
-            <Card >
+         <Scroll height=700>
+            <Card style="height:700px;">
+                 <p slot="title">权限菜单</p>               
                 <Tree :data="data5" :render="renderContent" ref="tree4"></Tree>
             </Card>
+        </Scroll>
         </Col>
         <Col span="8">
             <Card style="width:500 px">
@@ -175,6 +178,10 @@
                     displaySort: '',
                     parentPermissionId:data.id
                     }
+                if(this.permissionUpload.parentPermissionId==undefined){
+                    this.permissionUpload.parentPermissionId='0';
+                }
+                console.log(this.permissionUpload.parentPermissionId);
                 this.$http.post('/permission', this.permissionUpload).then(resp => {
                     if (resp.code === 200) {
                     this.getList();
