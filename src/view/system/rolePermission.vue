@@ -23,6 +23,7 @@
                     background: rgba(92,173,255, 0.2);
                     border-radius: 10px;
                     margin: 10px;
+                    transition: 0.2s;
                 }
 
                 .ivu-menu-submenu-title {
