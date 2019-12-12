@@ -36,8 +36,8 @@
                                     <span>{{item.name}}</span>
                                 </template>
                                 <CellGroup>
-                                    <Cell title="角色编码：" :label="item.code"/>
-                                    <Cell title="角色描述：" :label="item.description"/>
+                                    <Cell title="角色编码：" :extra="item.code"/>
+                                    <Cell title="角色描述：" :extra="item.description"/>
                                     <Cell title="是否启用">
                                         <i-switch v-model="switchValue" slot="extra"/>
                                     </Cell>                              
