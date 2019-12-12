@@ -46,7 +46,7 @@ module.exports = {
   // 打包时不生成.map文件
   productionSourceMap: false,
   devServer: {
-    port: 9000,
+    port: 9100,
     proxy: {
       '/api': {
         // target: 'http://localhost:8082/mf-edu',
