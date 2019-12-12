@@ -1,34 +1,65 @@
 <style lang="less">
     @import '../../styles/common.less';
 
-    .role-list {
-        .ivu-menu-submenu-title-icon {
-            display: none;
+    .rolePermission {
+
+        .role {
+
+            .role-list {
+                .ivu-cell-extra {
+                    width: 115px;
+                    display: block;
+                    text-align: right;
+                    word-break: normal;
+                    white-space: pre-wrap;
+                }
+
+                .ivu-menu-submenu-title-icon {
+                    display: none;
+                }
+
+                .ivu-menu-opened {
+                    border: 1px solid #2d8cf0;
+                    background: rgba(92,173,255, 0.2);
+                    border-radius: 10px;
+                    margin: 10px;
+                }
+
+                .ivu-menu-submenu-title {
+                    /*background: #fff;*/
+                }
+
+                .title-icon {
+                    position: absolute;
+                    top: 50%;
+                    right: 24px;
+                    transform: translateY(-50%);
+                }
+
+                .ivu-menu {
+                    padding: 10px 10px;
+                }
+            }
         }
 
-        .title-icon {
-            position: absolute;
-            top: 50%;
-            right: 24px;
-            transform: translateY(-50%);
+        .ivu-card-body {
+            height: ~'calc(100% - 51px)';
+            overflow: auto;
         }
 
-        .ivu-menu {
-            padding: 0 10px;
+        .button-div{
+            text-align:center;
         }
-    }
-    .button-div{
-      text-align:center;
+
     }
 </style>
 <template>
-    <Row :gutter="16">
-        <Col span="6">
-            <Card title="公共角色" icon="ios-options" :padding="0" shadow>
+    <Row :gutter="16" class="height-100 rolePermission">
+        <Col span="6" class="height-100 role">
+            <Card title="公共角色" icon="ios-options" :padding="0" shadow style="height: 100%">
                <Button icon="md-add" slot="extra" @click="add"></Button>
-               <Scroll height="600">
                 <div @mouseleave="mouseLeave">
-                    <Menu class="role-list" ref="menu" width="auto">
+                    <Menu class="role-list" ref="menu" width="auto" :accordion="true">
                         <template>
                             <Submenu v-for="(item, index) in roleList" :name="item.id" :key="index">
                                 <template slot="title">
@@ -40,25 +71,22 @@
                                     <Cell title="角色描述：" :extra="item.description"/>
                                     <Cell title="是否启用">
                                         <i-switch v-model="switchValue" slot="extra"/>
-                                    </Cell>                              
+                                    </Cell>
                                 </CellGroup>
                                 <div class="button-div">
-                                  <Button type="warning" ghost style="margin-right:15px;" @click="edit(item.id)" >修改</Button>                                 
-                                  <Button type="error" ghost @click="remove(item.id)" style="margin-left:15px;">删除</Button>
+                                    <Button type="warning" ghost style="margin-right:15px;" @click="edit(item.id)" >修改</Button>
+                                    <Button type="error" ghost @click="remove(item.id)" style="margin-left:15px;">删除</Button>
                                 </div>
                             </Submenu>
                         </template>
                     </Menu>
                 </div>
-               </Scroll>
             </Card>
         </Col>
-        <Col span="18">
-            <Card title="权限树" icon="ios-options">
+        <Col span="18" class="height-100">
+            <Card title="权限树" icon="ios-options" class="height-100">
               <Button  shape="circle" slot="extra">保存</Button>
-              <Scroll height="565">
                 <Tree :data="data4" show-checkbox multiple></Tree>
-              </Scroll>
             </Card>
         </Col>
         <Modal
