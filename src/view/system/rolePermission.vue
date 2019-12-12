@@ -23,8 +23,10 @@
 </style>
 <template>
     <Row :gutter="16">
-        <Col span="5">
+        <Col span="6">
             <Card title="公共角色" icon="ios-options" :padding="0" shadow>
+               <Button icon="md-add" slot="extra" @click="add"></Button>
+               <Scroll height="600">
                 <div @mouseleave="mouseLeave">
                     <Menu class="role-list" ref="menu" width="auto">
                         <template>
@@ -32,13 +34,8 @@
                                 <template slot="title">
                                     <Icon type="md-person" size="16"/>
                                     <span>{{item.name}}</span>
-                                    <!-- <div class="title-icon">
-                                        <Icon type="ios-construct" size="16"/>
-                                        <Icon type="ios-trash-outline" size="20"/>
-                                    </div> -->
                                 </template>
                                 <CellGroup>
-                                   <!-- <Cell title="角色描述" label="label content" /> -->
                                     <Cell title="角色编码：" :label="item.code"/>
                                     <Cell title="角色描述：" :label="item.description"/>
                                     <Cell title="是否启用">
@@ -46,18 +43,22 @@
                                     </Cell>                              
                                 </CellGroup>
                                 <div class="button-div">
-                                  <Button type="warning" ghost style="padding=10px;">修改</Button>
-                                  <Button type="error" ghost @click="remove(item.id)">删除</Button>
+                                  <Button type="warning" ghost style="margin-right:15px;" @click="edit(item.id)" >修改</Button>                                 
+                                  <Button type="error" ghost @click="remove(item.id)" style="margin-left:15px;">删除</Button>
                                 </div>
                             </Submenu>
                         </template>
                     </Menu>
                 </div>
+               </Scroll>
             </Card>
         </Col>
-        <Col span="19">
+        <Col span="18">
             <Card title="权限树" icon="ios-options">
+              <Button  shape="circle" slot="extra">保存</Button>
+              <Scroll height="565">
                 <Tree :data="data4" show-checkbox multiple></Tree>
+              </Scroll>
             </Card>
         </Col>
         <Modal
@@ -188,8 +189,8 @@
                         if (res.code === 200) {
                           self.isSaving = false;
                           self.editModal = false;
-                          self.reloadList();
-                          self.$Message.success('更新成功！');
+                          self.getRole();
+                          self.$Message.success('更新成功！');                         
                         } else {
                           self.$Message.error('更新失败！' + res.code);
                         }
@@ -199,7 +200,7 @@
                         if (res.code === 200) {
                           self.isSaving = false;
                           self.editModal = false;
-                          self.reloadList();
+                          self.getRole();
                           self.$Message.success('添加成功！');
                         } else {
                           self.$Message.error('添加失败！' + res.code);
@@ -235,6 +236,50 @@
             this.deleteModal = true;
             this.deleteIndex = index;
             this.isDeleting = false;
+          }, 
+           add() {
+            this.isSaving = false;
+            this.$refs.roleForm.resetFields();
+            this.modalTitle = '添加角色';
+            this.roleForm = {
+              code: undefined,
+              name: undefined,
+              description: undefined,
+              menuIds: [],
+            };
+            this.editModal = true;
+          },
+          edit(index) {
+            this.isSaving = false;
+            const self = this;
+            this.$refs.roleForm.resetFields();
+            this.modalTitle = '编辑角色';
+            this.editModal = true;
+            this.$http.get('/role/detailInfo/' + index, {}).then((res) => {
+              if (res.code === 200) {
+                self.roleForm = res.data;
+                if (self.roleForm.menuIds && self.roleForm.menuIds.length > 0) {
+                  for (let key in self.originMenu) {
+                    self.originMenu[key].forEach(item => {
+                      item.checked = false;
+                      for (let i=0; i<self.roleForm.menuIds.length; i++) {
+                        if (item.id === self.roleForm.menuIds[i]) {
+                          item.checked = true;
+                        }
+                      }
+                    })
+                  }
+                  let tmp = JSON.parse(JSON.stringify(self.originMenu[0]));
+                  self.sort(tmp);
+                  self.menuList = JSON.parse(JSON.stringify(tmp));
+                } else {
+    //              self.resetCheckMenu();
+                }
+              } else {
+                self.$Message.error('获取role失败！' + res.code);
+              }
+
+            });
           },
         },
         created() {
