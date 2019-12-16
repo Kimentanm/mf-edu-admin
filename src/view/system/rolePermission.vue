@@ -26,10 +26,6 @@
                     transition: 0.2s;
                 }
 
-                .ivu-menu-submenu-title {
-                    /*background: #fff;*/
-                }
-
                 .title-icon {
                     position: absolute;
                     top: 50%;
@@ -51,6 +47,9 @@
         .button-div{
             text-align:center;
         }
+         .demo-spin-icon-load{
+        animation: ani-demo-spin 1s linear infinite;
+    }
 
     }
 </style>
@@ -60,9 +59,9 @@
             <Card title="公共角色" icon="ios-options" :padding="0" shadow style="height: 100%">
                <Button icon="md-add" slot="extra" @click="add"></Button>
                 <div @mouseleave="mouseLeave">
-                    <Menu class="role-list" ref="menu" width="auto" :accordion="true">
+                    <Menu class="role-list" ref="menu" width="auto" :accordion="true" @on-open-change="findRoleId">
                         <template>
-                            <Submenu v-for="(item, index) in roleList" :name="item.id" :key="index">
+                            <Submenu v-for="(item, index) in roleList" :name="item.id" :key="index" > 
                                 <template slot="title">
                                     <Icon type="md-person" size="16"/>
                                     <span>{{item.name}}</span>
@@ -82,12 +81,22 @@
                         </template>
                     </Menu>
                 </div>
+                <Spin fix v-if="rerunModalLoading">
+                  <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
+                  <Icon type="ios-loading" size=18 class="demo-spin-icon-load"></Icon>
+                  <div>Loading</div>
+                </Spin>
             </Card>
         </Col>
         <Col span="18" class="height-100">
             <Card title="权限树" icon="ios-options" class="height-100">
               <Button  shape="circle" slot="extra">保存</Button>
                 <Tree :data="data4" show-checkbox multiple></Tree>
+                <Spin fix v-if="treeLoading">
+                  <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
+                  <Icon type="ios-loading" size=18 class="demo-spin-icon-load"></Icon>
+                  <div>Loading</div>
+                </Spin>
             </Card>
         </Col>
         <Modal
@@ -139,6 +148,8 @@
         name: 'rolePermission',
         data() {
             return {
+                rerunModalLoading:true,
+                treeLoading:true,
                 editCell: false,
                 isSaving: false,
                 switchValue: true,
@@ -183,8 +194,10 @@
         methods: {
             getTree() {
                 const self = this;
+                self.treeLoading=true;
                 this.$http.get('/permission/permission-list').then((res) => {
                     if (res.code === 200) {
+                        self.treeLoading=false;
                         this.data4[0].children = res.data.children;
                     } else {
                         self.$Message.error('获取数据失败！' + res.code);
@@ -193,10 +206,11 @@
             },
             getRole() {
                 const self = this;
+                self.rerunModalLoading=true;
                 this.$http.get('/role/pageList').then((res) => {
                     if (res.code === 200) {
+                        self.rerunModalLoading=false;
                         self.roleList = res.data.list;
-                        console.log(self.roleList);
                     } else {
                         self.$Message.error('获取数据失败！' + res.code);
                     }
@@ -244,7 +258,6 @@
               },
             handleReset() {
               this.editModal = false;
-              console.log('handleReset');
             },
             deleteItem() {
               this.isDeleting = true;
@@ -261,7 +274,6 @@
               });
             },
             remove(index) {
-              console.log(index);
             this.deleteModal = true;
             this.deleteIndex = index;
             this.isDeleting = false;
@@ -310,6 +322,22 @@
 
             });
           },
+          findRoleId(res){
+            if(res.length) {
+              this.$http.get('/role/detailInfo/' + res[0], {}).then((res) => {
+                this.data4[0].children.forEach(item => {            
+                    if(item.id===res.data.rolePermissionRefs[0].id){                      
+                      this.data4[0].children[0].selected =true;
+                      this.data4[0].selected =true;
+                      // console.log(item);    
+                    }
+                 })
+                 console.log(this.data4[0])
+                  this.getTree();
+              })
+            }
+            
+          }
         },
         created() {
             this.getTree();
