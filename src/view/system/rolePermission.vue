@@ -93,7 +93,7 @@
         </Col>
         <Col span="18" class="height-100">
             <Card title="权限树" icon="ios-options" class="height-100">
-                <Button shape="circle" slot="extra">保存</Button>
+                <Button shape="circle" slot="extra"  @click="submitNode()">保存</Button>
                 <Tree v-if="treeShow" :data="data4" show-checkbox multiple />
                 <Spin fix v-if="treeLoading">
                     <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
@@ -127,7 +127,6 @@
             <div slot="footer">
                 <Button @click="handleReset()" style="margin-left: 8px">取消</Button>
                 <Button type="primary" :loading="isSaving" @click="handleSubmit()">保存</Button>
-
             </div>
         </Modal>
 
@@ -173,6 +172,7 @@
                     name: undefined,
                     description: undefined,
                     menuIds: [],
+                    permissionIds:[]
                 },
                 roleFormRule: {
                     code: [
@@ -258,6 +258,17 @@
                     }
                 })
             },
+            submitNode(){
+                this.saveTreeNode(this.data4);
+                this.$http.put('/role/updateRole',this.roleForm).then((res) => {
+                    if (response.code === 200) {
+                        self.$Message.success('保存成功！');
+                    }
+                    else{
+                        self.$Message.success('保存失败！');
+                    }
+                })  
+            },
             handleReset() {
                 this.editModal = false;
             },
@@ -289,6 +300,7 @@
                     name: undefined,
                     description: undefined,
                     menuIds: [],
+                    permissionIds:[]
                 };
                 this.editModal = true;
             },
@@ -334,6 +346,8 @@
                             if (permissions) {
                                 this.traverseTreeLeafNode(this.data4, permissions);
                             }
+                            this.roleForm=response.data;
+                            console.log(this.roleForm);
                         }
                     })
                 }
@@ -357,6 +371,20 @@
                         this.$set(child, 'checked', result)
                     }
                 });
+            },
+            saveTreeNode(children){
+                this.roleForm.permissionIds=[];
+                children.forEach(child=>{
+                    if(child.children.length){
+                        this.saveTreeNode(child.children)
+                    }else{
+                        if(child.checked ===true){
+                            let id =child.id;
+                            this.roleForm.permissionIds.push(id);                          
+                        }
+                    }
+                })
+               
             }
         },
         created() {
