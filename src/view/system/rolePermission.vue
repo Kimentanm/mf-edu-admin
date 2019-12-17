@@ -93,8 +93,8 @@
         </Col>
         <Col span="18" class="height-100">
             <Card title="权限树" icon="ios-options" class="height-100">
-                <Button shape="circle" slot="extra"  @click="submitNode()">保存</Button>
-                <Tree v-if="treeShow" :data="data4" show-checkbox multiple />
+                <Button shape="circle" slot="extra" @click="submitNode()">保存</Button>
+                <Tree v-if="!treeLoading" :data="data4" show-checkbox multiple/>
                 <Spin fix v-if="treeLoading">
                     <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
                     <Icon type="ios-loading" size=18 class="demo-spin-icon-load"></Icon>
@@ -172,7 +172,7 @@
                     name: undefined,
                     description: undefined,
                     menuIds: [],
-                    permissionIds:[]
+                    permissionIds: []
                 },
                 roleFormRule: {
                     code: [
@@ -190,17 +190,22 @@
                         {type: 'array', message: '权限不能为空', trigger: 'blur', required: true}
                     ]
                 },
-                treeShow: true,
             }
         },
         methods: {
-            getTree() {
+            async getTree() {
                 const self = this;
                 self.treeLoading = true;
-                this.$http.get('/permission/permission-list').then((res) => {
+                await this.$http.get('/permission/permission-list').then((res) => {
                     if (res.code === 200) {
-                        self.treeLoading = false;
-                        this.data4[0].children = res.data.children;
+                        this.data4[0] = {
+                            title: '权限总菜单',
+                            expand: true,
+                            children: res.data.children
+                        };
+                        setTimeout(() => {
+                            self.treeLoading = false;
+                        }, 100)
                     } else {
                         self.$Message.error('获取数据失败！' + res.code);
                     }
@@ -258,16 +263,15 @@
                     }
                 })
             },
-            submitNode(){
+            submitNode() {
                 this.saveTreeNode(this.data4);
-                this.$http.put('/role/updateRole',this.roleForm).then((res) => {
+                this.$http.put('/role/updateRole', this.roleForm).then((res) => {
                     if (response.code === 200) {
                         self.$Message.success('保存成功！');
-                    }
-                    else{
+                    } else {
                         self.$Message.success('保存失败！');
                     }
-                })  
+                })
             },
             handleReset() {
                 this.editModal = false;
@@ -300,7 +304,7 @@
                     name: undefined,
                     description: undefined,
                     menuIds: [],
-                    permissionIds:[]
+                    permissionIds: []
                 };
                 this.editModal = true;
             },
@@ -336,9 +340,8 @@
 
                 });
             },
-            findRoleId(res) {
-                // 清除树的选中状态
-                this.traverseTreeLeafNode(this.data4);
+            async findRoleId(res) {
+                await this.getTree();
                 if (res.length) {
                     this.$http.get('/role/detailInfo/' + res[0], {}).then((response) => {
                         if (response.code === 200) {
@@ -346,8 +349,7 @@
                             if (permissions) {
                                 this.traverseTreeLeafNode(this.data4, permissions);
                             }
-                            this.roleForm=response.data;
-                            console.log(this.roleForm);
+                            this.roleForm = response.data;
                         }
                     })
                 }
@@ -372,19 +374,19 @@
                     }
                 });
             },
-            saveTreeNode(children){
-                this.roleForm.permissionIds=[];
-                children.forEach(child=>{
-                    if(child.children.length){
+            saveTreeNode(children) {
+                this.roleForm.permissionIds = [];
+                children.forEach(child => {
+                    if (child.children.length) {
                         this.saveTreeNode(child.children)
-                    }else{
-                        if(child.checked ===true){
-                            let id =child.id;
-                            this.roleForm.permissionIds.push(id);                          
+                    } else {
+                        if (child.checked === true) {
+                            let id = child.id;
+                            this.roleForm.permissionIds.push(id);
                         }
                     }
                 })
-               
+
             }
         },
         created() {

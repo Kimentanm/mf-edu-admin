@@ -12,7 +12,10 @@
         display: flex;
         align-items: center;
 
-        &-text {
+        button {
+            height: 100%;
+            width: 100%;
+            border-radius: unset;
             font-size: 20px;
             color: #FFFFFF;
             margin: 0 auto;
@@ -44,11 +47,9 @@
                             </Input>
                         </FormItem>
                     </Form>
-                    <a>
-                        <div @click="handleSubmit" slot="footer" class="login-button">
-                            <span class="login-button-text">{{loginButtonTest}}</span>
-                        </div>
-                    </a>
+                    <div @click="handleSubmit" slot="footer" class="login-button">
+                        <Button type="success" :loading="loginLoading" size="large">{{loginButtonTest}}</Button>
+                    </div>
                 </div>
             </Card>
         </div>
@@ -109,6 +110,7 @@
                         {type: 'email', message: '电子邮箱的格式不正确', trigger: 'blur'}
                     ],
                 },
+                loginLoading: false
             };
         },
         methods: {
@@ -119,9 +121,11 @@
             handleSubmit() {
                 this.$refs.loginForm.validate((valid) => {
                     if (valid) {
+                        this.loginLoading = true;
                         this.loginButtonTest = "正在登录";
                         this.handleLogin(this.form).then(res => {
                             this.getUserInfo().then(res => {
+                                this.loginLoading = false;
                                 this.loginButtonTest = "登录成功";
                                 this.$router.push({
                                     name: 'home'
