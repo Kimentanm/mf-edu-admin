@@ -204,9 +204,6 @@
                             expand: true,
                             children: res.data.children
                         };
-                        setTimeout(() => {
-                            self.treeLoading = false;
-                        }, 100)
                     } else {
                         self.$Message.error('获取数据失败！' + res.code);
                     }
@@ -345,7 +342,6 @@
                 });
             },
             async findRoleId(res) {
-                // console.log(res);
                 await this.getTree();
                 if (res.length) {
                     this.$http.get('/role/detailInfo/' + res[0], {}).then((response) => {
@@ -355,8 +351,11 @@
                                 this.traverseTreeLeafNode(this.data4, permissions);
                             }
                             this.roleForm = response.data;
+                            this.treeLoading = false;
                         }
                     })
+                } else {
+                    this.treeLoading = false;
                 }
             },
             /**
@@ -364,7 +363,6 @@
              * @param children
              */
             traverseTreeLeafNode(children, permissions) {
-                console.log(permissions);
                 children.forEach(child => {
                     // 如果当前节点有子节点，继续向下层遍历
                     if (child.children.length) {
@@ -396,8 +394,9 @@
 
             }
         },
-        created() {
-            this.getTree();
+        async created() {
+            await this.getTree();
+            this.treeLoading = false;
             this.getRole();
         },
 
