@@ -93,7 +93,7 @@
         </Col>
         <Col span="18" class="height-100">
             <Card title="权限树" icon="ios-options" class="height-100">
-                <Button shape="circle" slot="extra" :loading="loading" @click="submitNode()">保存</Button>
+                <Button shape="circle" slot="extra" :loading="loading" @click="submitNode()" v-if="saveVisual">保存</Button>
                 <Tree v-if="!treeLoading" :data="data4" show-checkbox multiple/>
                 <Spin fix v-if="treeLoading">
                     <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
@@ -262,6 +262,7 @@
                 })
             },
             submitNode() {
+                this.roleForm.permissionIds = [];
                 this.saveTreeNode(this.data4);
                 this.loading=true;
                 this.$http.put('/role/updateRole', this.roleForm).then((res) => {
@@ -348,6 +349,7 @@
                         if (response.code === 200) {
                             let permissions = response.data?.permissions;
                             if ( response.data) {
+                            
                                 this.traverseTreeLeafNode(this.data4, permissions);
                             }
                             this.roleForm = response.data;
@@ -380,25 +382,40 @@
                 });
             },
             saveTreeNode(children) {
-                this.roleForm.permissionIds = [];
                 children.forEach(child => {
                     if (child.children.length) {
                         this.saveTreeNode(child.children)
                     } else {
                         if (child.checked === true) {
                             let id = child.id;
-                            this.roleForm.permissionIds.push(id);
+                            this.roleForm.permissionIds.push(child.id);
                         }
                     }
                 })
-
-            }
+                
+            },
+            //初始页面节点不可选 
+             TreeDisabled(children) {
+                children.forEach(child => {
+                    if (child.children.length) {
+                        this.$set(child, 'disabled', true)
+                        this.TreeDisabled(child.children)
+                    } else {
+                       this.$set(child, 'disabled', true)
+                    }
+                })
+                
+            },
         },
         async created() {
             await this.getTree();
             this.treeLoading = false;
             this.getRole();
+             this.TreeDisabled(this.data4[0].children);
         },
+        mounted(){
+           
+        }
 
     }
 
