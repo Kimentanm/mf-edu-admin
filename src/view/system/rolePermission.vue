@@ -93,7 +93,7 @@
         </Col>
         <Col span="18" class="height-100">
             <Card title="权限树" icon="ios-options" class="height-100">
-                <Button shape="circle" slot="extra" @click="submitNode()">保存</Button>
+                <Button shape="circle" slot="extra" :loading="loading" @click="submitNode()">保存</Button>
                 <Tree v-if="!treeLoading" :data="data4" show-checkbox multiple/>
                 <Spin fix v-if="treeLoading">
                     <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
@@ -150,6 +150,7 @@
         name: 'rolePermission',
         data() {
             return {
+                loading: false,
                 rerunModalLoading: true,
                 treeLoading: true,
                 editCell: false,
@@ -265,11 +266,14 @@
             },
             submitNode() {
                 this.saveTreeNode(this.data4);
+                this.loading=true;
                 this.$http.put('/role/updateRole', this.roleForm).then((res) => {
-                    if (response.code === 200) {
-                        self.$Message.success('保存成功！');
+                    if (res.code === 200) {
+                        this.loading=false;
+                        this.$Message.success('保存成功！');
+                        this.findRoleId([this.roleForm.id]);
                     } else {
-                        self.$Message.success('保存失败！');
+                        this.$Message.success('保存失败！');
                     }
                 })
             },
@@ -341,12 +345,13 @@
                 });
             },
             async findRoleId(res) {
+                // console.log(res);
                 await this.getTree();
                 if (res.length) {
                     this.$http.get('/role/detailInfo/' + res[0], {}).then((response) => {
                         if (response.code === 200) {
                             let permissions = response.data?.permissions;
-                            if (permissions) {
+                            if ( response.data) {
                                 this.traverseTreeLeafNode(this.data4, permissions);
                             }
                             this.roleForm = response.data;
@@ -359,6 +364,7 @@
              * @param children
              */
             traverseTreeLeafNode(children, permissions) {
+                console.log(permissions);
                 children.forEach(child => {
                     // 如果当前节点有子节点，继续向下层遍历
                     if (child.children.length) {
@@ -368,6 +374,7 @@
                         let result = false;
                         if (index !== -1 && index !== undefined) {
                             result = true;
+                            // console.log(child);
                         }
                         // 数组的长度改变会触发页面重新渲染，但是属性改变不会，所以要使用$set
                         this.$set(child, 'checked', result)
