@@ -131,10 +131,12 @@
                                     name: 'home'
                                 })
                             }).catch(err => {
+                                this.loginLoading = false;
                                 this.loginButtonTest = "登录";
                                 this.$Message.error("获取当前用户基本信息失败");
                             })
                         }).catch(err => {
+                            this.loginLoading = false;
                             this.loginButtonTest = "登录";
                             this.$Message.error("登录名或密码错误");
                         })

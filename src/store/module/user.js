@@ -68,7 +68,6 @@ export default {
         commit('setUsername', '');
         commit('setToken', '');
         commit('setAccess', []);
-        commit('setPermissionIds', []);
         resolve()
       })
     },

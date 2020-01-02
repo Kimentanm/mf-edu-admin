@@ -81,7 +81,7 @@
             </Form>
         </div>
         <Spin fix v-if="ownSpaceLoading">
-            <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
+            <Icon type="load-c" size=18 class="demo-spin-icon-load"/>
             <div>正在加载数据...</div>
         </Spin>
 
@@ -91,15 +91,15 @@
                   :rules="passwordValidate">
                 <FormItem label="原密码" prop="oldPass" :error="oldPassError">
                     <Input type="password" v-model="editPasswordForm.oldPass" placeholder="请输入现在使用的密码"
-                           style="width: 170px"></Input>
+                           style="width: 170px"/>
                 </FormItem>
                 <FormItem label="新密码" prop="newPass">
                     <Input type="password" v-model="editPasswordForm.newPass" placeholder="请输入新密码，至少6位字符"
-                           style="width: 170px"></Input>
+                           style="width: 170px"/>
                 </FormItem>
                 <FormItem label="确认新密码" prop="rePass">
                     <Input type="password" v-model="editPasswordForm.rePass" placeholder="请再次输入新密码"
-                           style="width: 170px"></Input>
+                           style="width: 170px"/>
                 </FormItem>
             </Form>
             <div slot="footer">
@@ -248,17 +248,22 @@
                         this.savePassLoading = true;
                         let param = {
                             username: this.userInfo.loginName,
-                            password: this.editPasswordForm.oldPass
+                            password: this.editPasswordForm.oldPass,
+                            type: 'ADMIN'
                         };
                         this.$http.post('/authenticate', param).then((res) => {
                             if (res.code === 200) {
-                                this.userInfo.password = this.editPasswordForm.newPass;
-                                this.$http.put('/user/password', this.userInfo).then((resp) => {
+                                let params = {
+                                    id: this.userInfo.id,
+                                    password: this.editPasswordForm.newPass,
+                                    type: "ADMIN"
+                                };
+                                this.$http.put('/user/password', params).then((resp) => {
                                     if (resp.code === 200) {
                                         this.cancelEditPass();
                                         this.$Message.success('更新密码成功，请重新登录');
                                         // 执行登出操作
-                                        this.$store.dispatch('logout').then(resp => {
+                                        this.$store.dispatch('handleLogOut').then(resp => {
                                             this.$router.push({
                                                 name: 'login'
                                             });
