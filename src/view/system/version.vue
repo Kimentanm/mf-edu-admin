@@ -48,49 +48,33 @@
         cancel-text="取消"
         :title="modalTitle"
         :styles="{top: '20px'}">
-      <Form ref='studentForm' :model='studentForm' :rules='studentFormRule' :label-width='90'>
-        <FormItem label='用户名' prop='userName'>
-          <Input v-model='studentForm.userName' :maxlength=50 placeholder='请输入用户名' style="width: 550px;"/>
+      <Form ref='versionForm' :model='versionForm' :rules='versionFormRule' :label-width='90'>
+        <FormItem label='版本号' prop='versionNo'>
+          <Input v-model='versionForm.versionNo' :maxlength=50 placeholder='请输入版本号' style="width: 550px;"/>
         </FormItem>
-        <FormItem label='姓名' prop='realName'>
-          <Input v-model='studentForm.realName' :maxlength=50 placeholder='请输入真实姓名' style="width: 550px;"/>
-        </FormItem>
-        <FormItem label='性别' prop='gender'>
+        <FormItem label='种类' prop='type'>
           <i-select placeholder="请选择性别" :autosize='{minRows: 2,maxRows: 5}'
-            :maxlength=500 style="width: 550px;"v-model='studentForm.gender'>
-              <i-option :value="0">男</i-option>
-              <i-option :value="1">女</i-option>
+            :maxlength=500 style="width: 550px;"v-model='versionForm.type'>
+              <i-option value="student">Student</i-option>
+              <i-option value="teacher">Teacher</i-option>
+              <i-option value="admin">Admin</i-option>
           </i-select>
         </FormItem>
-        <FormItem label='密码' prop='password' v-if="isShow">
-          <Input  type="password" v-model='studentForm.password' :maxlength=500 style="width: 550px;"
+        <FormItem label='资源hash值' prop='resHash' >
+          <Input v-model='versionForm.resHash' :maxlength=500 style="width: 550px;"
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
         </FormItem>
-        <FormItem label='确认密码' prop='pwdCheck' v-if="isShow">
-          <Input type="password" :maxlength=500 style="width: 550px;" v-model='studentForm.pwdCheck'
+        <FormItem label='描述' prop='description' v-if="isShow">
+          <Input :maxlength=500 style="width: 550px;" v-model='versionForm.description'
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
         </FormItem>
-        <FormItem label='电话号码' prop='mobilePhone'>
-          <Input v-model='studentForm.mobilePhone'  :maxlength=500 style="width: 550px;"
+        <FormItem label='更新日志' prop='updateLog'>
+          <Input v-model='versionForm.updateLog'  :maxlength=500 style="width: 550px;"
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
         </FormItem>
-        <FormItem label='邮箱' prop='email'>
-          <Input v-model='studentForm.email' :maxlength=500 style="width: 550px;"
+        <FormItem label='资源地址' prop='resUrl'>
+          <Input v-model='versionForm.resUrl' :maxlength=500 style="width: 550px;"
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
-        </FormItem>
-        <FormItem label="头像:" prop='imageUrl' style="margin-top: 25px">
-          <div>
-            <div class="margin-top-10  margin-top-10Again" v-show="fileChoose">
-              <img :src="studentForm.imageUrl" class="imgShow"/>
-            </div>
-            <div>
-              <div class="fileInput">
-                <input type="file" accept="image/png, image/jpeg, image/gif, image/jpg"
-                       @change="handleChange" id="fileinput"/>
-                <span>选择图片</span>
-              </div>
-            </div>
-          </div>
         </FormItem>
       </Form>
       <div slot="footer">
@@ -112,24 +96,6 @@
         <Button type="error" size="large" long :loading="isDeleting" @click="deleteItem">删除</Button>
       </div>
     </Modal>
-    <Modal v-model="showCropedImage">
-      <div class="cropperAgain">
-        <vueCropper
-            ref="cropper"
-            :img="cut.Img"
-            :outputSize="cut.size"
-            :outputType="cut.outputType"
-            :autoCrop="cut.autoCrop"
-            :autoCropWidth="cut.autoCropWidth"
-            :autoCropHeight="cut.autoCropHeight"
-        >
-        </vueCropper>
-      </div>
-      <div slot="footer">
-        <Button @click="cancelReset()" style="margin-left: 8px">取消</Button>
-        <Button type="primary" icon="crop" @click="handleCrop" class="pictureButton">裁剪</Button>
-      </div>
-    </Modal>
   </div>
 </template>
 <script>
@@ -139,56 +105,27 @@
     components: { VueCropper },
     name: 'version',
     data() {
-      const pwdCheckValidate = (rule, value, callback) => {
-            if (this.studentForm.password != '' && value == '') {
-                callback(new Error('确认密码不能为空'));
-            } else if (this.studentForm.password != value) {
-                callback(new Error('新密码和确认密码应相同'));
-            } else {
-                callback();
-            }
-        };
-      const userNameCheckValidate = (rule, value, callback) => {
-        if (value) {
-          if (value.indexOf(":") !== -1) {
-            callback(new Error('用户名中不能包含特殊字符'));
-          } else {
-            callback();
-          }
-        } else {
-          callback(new Error('用户名不能为空'));
-        }
-      };
       return {
-        studentForm: {
-          userName: undefined,
-          realName: undefined,
-          password: undefined,
-           imageUrl: undefined,
-          mobilePhone: undefined,
-          gender: undefined,
-          email: undefined,
-          pwdCheck: undefined,
+        versionForm: {
+          versionNo: undefined,
+          type: undefined,
+          resHash: undefined,
+          description: undefined,
+          updateLog: undefined,
+          resUrl: undefined,        
         },
-        studentFormRule: {
-          userName: [
-            { required: true, validator: userNameCheckValidate, trigger: 'blur' },
+        versionFormRule: {
+          versionNo: [
+            { required: true, message: '版本号不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
-          realName: [
-            { required: true, message: '姓名不能为空.', trigger: 'blur' },
+          type:[
+             { required: true, type: 'number', message: '种类不能为空.', trigger: 'change' },
+          ],
+          resUrl: [
+            { required: true, message: '资源地址不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
-          gender: [
-            { required: true, type: 'number', message: '性别不能为空.', trigger: 'change' },
-          ],
-          password: [
-            { required: true, message: '密码不能为空.', trigger: 'blur' },
-            { type: 'string', max: 255, message: '密码最多255字符', trigger: 'blur' },
-          ],
-           pwdCheck:[
-            {required: true, validator: pwdCheckValidate, trigger: 'blur'}
-          ]
         },
         cut: {
           size: 1,
@@ -215,13 +152,12 @@
         deleteIndex: '',
         columns: [
           { type: 'index', title: '序号', width: 60, align: 'center' },
-          { title: '版本', key: 'version', align: 'center' },
           { title: '版本号', key: 'versionNo', align: 'center' },
           { title: '种类', key: 'type', align: 'center' },
-          { title: '哈希', key: 'resHash', align: 'center' },
+          { title: '资源hash值', key: 'resHash', align: 'center' },
           { title: '描述', key: 'description', align: 'center' },
           { title: '更新日志', key: 'updateLog', align: 'center' },
-          { title: '地址', key: 'resUrl', align: 'center' },
+          { title: '资源地址', key: 'resUrl', align: 'center' },
           {
             title: '操作',
             align: 'center',
@@ -265,10 +201,10 @@
       },
 
       getCheckMenuList(list) {
-        this.studentForm.menuIds = [];
+        this.versionForm.menuIds = [];
         if (list) {
           list.forEach(item => {
-            this.studentForm.menuIds.push(item.id);
+            this.versionForm.menuIds.push(item.id);
           })
         }
       },
@@ -296,7 +232,7 @@
           };
           this.$http.post('/common/file/upload', fd, config).then(resp => {
             if (resp.code === 200) {
-              self.studentForm.imageUrl = resp.data.location;
+              self.versionForm.imageUrl = resp.data.location;
               self.fileChoose = true;
             }
           }).catch(err => {
@@ -349,16 +285,15 @@
         this.isSaving = false;
         this.fileChoose = false;
         this.isShow = true;
-        this.$refs.studentForm.resetFields();
+        this.$refs.versionForm.resetFields();
         this.modalTitle = '添加版本信息';
-        this.studentForm = {
-          userName: undefined,
-          realName: undefined,
-          password: undefined,
-          imageUrl: undefined,
-          mobilePhone: undefined,
-          gender: undefined,
-          email: undefined,
+        this.versionForm = {
+          versionNo: undefined,
+          type: undefined,
+          resHash: undefined,
+          description: undefined,
+          updateLog: undefined,
+          resUrl: undefined,  
         };
         this.editModal = true;
       },
@@ -367,21 +302,21 @@
         this.isSaving = false;
         this.isShow = false;
         const self = this;
-        this.$refs.studentForm.resetFields();
+        this.$refs.versionForm.resetFields();
         this.modalTitle = '编辑版本信息';
         this.editModal = true;
         this.$http.get('/version/' + self.data[index].id, {}).then((res) => {
           if (res.code === 200) {
-            self.studentForm = res.data;
-            if (self.studentForm.imageUrl) {
+            self.versionForm = res.data;
+            if (self.versionForm.imageUrl) {
               self.fileChoose = true;
             }
-            if (self.studentForm.menuIds && self.studentForm.menuIds.length > 0) {
+            if (self.versionForm.menuIds && self.versionForm.menuIds.length > 0) {
               for (let key in self.originMenu) {
                 self.originMenu[key].forEach(item => {
                   item.checked = false;
-                  for (let i=0; i<self.studentForm.menuIds.length; i++) {
-                    if (item.id === self.studentForm.menuIds[i]) {
+                  for (let i=0; i<self.versionForm.menuIds.length; i++) {
+                    if (item.id === self.versionForm.menuIds[i]) {
                       item.checked = true;
                     }
                   }
@@ -403,10 +338,10 @@
       handleSubmit() {
         this.isSaving = true;
         let self = this;
-        this.$refs.studentForm.validate((valid) => {
+        this.$refs.versionForm.validate((valid) => {
           if (valid) {
-             if (this.studentForm.id) {
-              this.$http.put('/version', self.studentForm).then((res) => {
+             if (this.versionForm.id) {
+              this.$http.put('/version', self.versionForm).then((res) => {
                 if (res.code === 200) {
                   self.editModal = false;
                   self.reloadList();
@@ -419,7 +354,7 @@
                 self.isSaving = false;
               })
             } else {
-              this.$http.post('/version', self.studentForm).then((res) => {
+              this.$http.post('/version', self.versionForm).then((res) => {
                 if (res.code === 200) {
                   self.editModal = false;
                   self.reloadList();
