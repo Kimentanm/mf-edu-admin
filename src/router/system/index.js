@@ -9,6 +9,7 @@ import studentRouter from './studentRouter'
 import classroomRouter from './classroomRouter'
 import permissionRouter from "./permissionRouter";
 import rolePermissionRouter from "./rolePermissionRouter";
+import versionRouter from "./versionRouter";
 // *** insert import here *** // // don't change this line
 
 export default {
@@ -29,6 +30,7 @@ export default {
         studentRouter,
         classroomRouter,
         permissionRouter,
-        rolePermissionRouter
+        rolePermissionRouter,
+        versionRouter
     ]
 }
