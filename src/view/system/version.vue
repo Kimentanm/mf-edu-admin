@@ -53,28 +53,36 @@
           <Input v-model='versionForm.versionNo' :maxlength=50 placeholder='请输入版本号' style="width: 550px;"/>
         </FormItem>
         <FormItem label='种类' prop='type'>
-          <i-select placeholder="请选择性别" :autosize='{minRows: 2,maxRows: 5}'
+          <i-select placeholder="请选择种类" :autosize='{minRows: 2,maxRows: 5}'
             :maxlength=500 style="width: 550px;"v-model='versionForm.type'>
               <i-option value="student">Student</i-option>
               <i-option value="teacher">Teacher</i-option>
-              <i-option value="admin">Admin</i-option>
           </i-select>
         </FormItem>
-        <FormItem label='资源hash值' prop='resHash' >
-          <Input v-model='versionForm.resHash' :maxlength=500 style="width: 550px;"
+        <FormItem label='描述' prop='description' >
+          <Input type="textarea" :maxlength=500 style="width: 550px;" v-model='versionForm.description'
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
         </FormItem>
-        <FormItem label='描述' prop='description' v-if="isShow">
-          <Input :maxlength=500 style="width: 550px;" v-model='versionForm.description'
-                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
+        <FormItem  >
+          <Upload
+            multiple
+            type="drag"
+            :action="baseUrl + '/version/resource/upload'" 
+            :headers='headers'
+            style="width: 550px"
+            :before-upload='beforeUpload'
+            :on-success='getUploadRes'
+            :on-remove='uploadRemove'
+            >
+            <div style="padding: 20px 0">
+                <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
+                <p>Click or drag files here to upload</p>
+            </div>
+          </Upload>
         </FormItem>
         <FormItem label='更新日志' prop='updateLog'>
-          <Input v-model='versionForm.updateLog'  :maxlength=500 style="width: 550px;"
-                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
-        </FormItem>
-        <FormItem label='资源地址' prop='resUrl'>
-          <Input v-model='versionForm.resUrl' :maxlength=500 style="width: 550px;"
-                 :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
+          <tinymce id="tinymceEditer" v-model="versionForm.updateLog" style="width: 550px">
+          </tinymce>
         </FormItem>
       </Form>
       <div slot="footer">
@@ -99,13 +107,17 @@
   </div>
 </template>
 <script>
- import { cropperPicture } from '../../libs/util';
+ import { cropperPicture,getToken } from '../../libs/util';
+ import tinymce from '@/view/shared/tinymce.vue';
   import VueCropper from 'vue-cropper'
+  import baseUrl from '_conf/url'
   export default {
-    components: { VueCropper },
+    components: { VueCropper ,tinymce},
     name: 'version',
     data() {
       return {
+        allowUpload:true,
+        baseUrl:baseUrl,
         versionForm: {
           versionNo: undefined,
           type: undefined,
@@ -120,7 +132,7 @@
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
           type:[
-             { required: true, type: 'number', message: '种类不能为空.', trigger: 'change' },
+             { required: true, type: 'string', message: '性别不能为空.', trigger: 'change' }
           ],
           resUrl: [
             { required: true, message: '资源地址不能为空.', trigger: 'blur' },
@@ -135,7 +147,6 @@
           autoCropWidth: 200,
           autoCropHeight: 200
         },
-        isShow:true,
         fileChoose: false,
         loading: false,
         keepalive: false,
@@ -156,7 +167,6 @@
           { title: '种类', key: 'type', align: 'center' },
           { title: '资源hash值', key: 'resHash', align: 'center' },
           { title: '描述', key: 'description', align: 'center' },
-          { title: '更新日志', key: 'updateLog', align: 'center' },
           { title: '资源地址', key: 'resUrl', align: 'center' },
           {
             title: '操作',
@@ -168,6 +178,13 @@
           }
         ],
         data: []
+      }
+    },
+    computed:{
+      headers(){
+        return{
+          "Authorization":getToken()
+        }
       }
     },
     methods: {
@@ -190,7 +207,24 @@
 
         })
       },
-
+      beforeUpload(){
+        if(this.allowUpload===false){            
+            this.$Message.error('只允许上传一个文件！');
+            return false;
+        }
+      },
+      uploadRemove(){
+        this.allowUpload=true;
+      },
+      getUploadRes(res){
+        if (res.code === 200) {
+          this.versionForm.resHash=res.data[0].hash;
+          this.versionForm.resUrl=res.data[0].location;
+          this.allowUpload=false;
+        }else{
+          this.$Message.success('上传文件失败');
+        }
+      },
       getMenuList() {
         const self = this;
         this.$http.get('/menu/listMenuBO').then((res) => {
@@ -284,7 +318,6 @@
       add() {
         this.isSaving = false;
         this.fileChoose = false;
-        this.isShow = true;
         this.$refs.versionForm.resetFields();
         this.modalTitle = '添加版本信息';
         this.versionForm = {
@@ -375,7 +408,6 @@
       },
       handleReset() {
         this.editModal = false;
-        console.log('handleReset');
       },
       remove(index) {
         this.deleteModal = true;
