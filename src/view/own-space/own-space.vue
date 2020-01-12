@@ -304,7 +304,7 @@
                     const config = {
                         headers: {'Content-Type': 'multipart/form-data'}
                     };
-                    this.$http.post('/user/file/upload', fd, config).then(resp => {
+                    this.$http.post('/user/avatar/upload', fd, config).then(resp => {
                         if (resp.code === 200) {
                             this.pictureButtonLoading = false;
                             this.pictureShow = false;
