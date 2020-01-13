@@ -301,6 +301,11 @@
           this.clear();
         };
       },
+      clear() {
+        if (document.getElementById('fileinput').value !== '') {
+          document.getElementById('fileinput').value = '';
+        }
+      },
        handleCrop() {
         this.showCropedImage = false;
         let self = this;

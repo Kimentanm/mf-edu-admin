@@ -48,43 +48,48 @@
         cancel-text="取消"
         :title="modalTitle"
         :styles="{top: '20px'}">
-      <Form ref='versionForm' :model='versionForm' :rules='versionFormRule' :label-width='90'>
-        <FormItem label='版本号' prop='versionNo'>
-          <Input v-model='versionForm.versionNo' :maxlength=50 placeholder='请输入版本号' style="width: 550px;"/>
+      <Form ref='coursewareForm' :model='coursewareForm' :rules='versionFormRule' :label-width='90'>
+        <FormItem label='课件代码' prop='coursewareCode'>
+          <Input v-model='coursewareForm.coursewareCode' :maxlength=50 placeholder='请输入课件代码' style="width: 550px;"/>
         </FormItem>
-        <FormItem label='种类' prop='type'>
-          <i-select placeholder="请选择种类" :autosize='{minRows: 2,maxRows: 5}'
-            :maxlength=500 style="width: 550px;"v-model='versionForm.type'>
-              <i-option value="student">Student</i-option>
-              <i-option value="teacher">Teacher</i-option>
-          </i-select>
+        <FormItem label='课件名称' prop='coursewareName'>
+          <Input v-model='coursewareForm.coursewareName' :maxlength=50 placeholder='请输入课件名称' style="width: 550px;"/>
         </FormItem>
         <FormItem label='描述' prop='description' >
-          <Input type="textarea" :maxlength=500 style="width: 550px;" v-model='versionForm.description'
+          <Input type="textarea" :maxlength=500 style="width: 550px;" v-model='coursewareForm.description'
                  :autosize='{minRows: 2,maxRows: 5}' placeholder='请输入...'/>
+        </FormItem>
+        <FormItem label="课件封面:" prop='coverImg' style="margin-top: 25px">
+          <div>
+            <div class="margin-top-10  margin-top-10Again" v-show="fileChoose">
+              <img :src="coursewareForm.coverImg" class="imgShow"/>
+            </div>
+            <div>
+              <div class="fileInput">
+                <input type="file" accept="image/png, image/jpeg, image/gif, image/jpg"
+                       @change="handleChange" id="fileinput"/>
+                <span>选择图片</span>
+              </div>
+            </div>
+          </div>
         </FormItem>
         <FormItem  >
           <Upload
             ref='file'
             multiple
             type="drag"
-            :action="baseUrl + '/version/resource/upload'" 
+            :action="baseUrl + '/common/file/upload'" 
             :headers='headers'
             style="width: 550px"
             :before-upload='beforeUpload'
             :on-success='getUploadRes'
             :on-remove='uploadRemove'
-            @clearFiles='allowClear'
             >
             <div style="padding: 20px 0">
                 <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
                 <p>Click or drag files here to upload</p>
             </div>
           </Upload>
-        </FormItem>
-        <FormItem label='更新日志' prop='updateLog'>
-          <tinymce id="tinymceEditer" v-model="versionForm.updateLog" style="width: 550px">
-          </tinymce>
         </FormItem>
       </Form>
       <div slot="footer">
@@ -106,27 +111,43 @@
         <Button type="error" size="large" long :loading="isDeleting" @click="deleteItem">删除</Button>
       </div>
     </Modal>
+    <Modal v-model="showCropedImage">
+      <div class="cropperAgain">
+        <vueCropper
+            ref="cropper"
+            :img="cut.Img"
+            :outputSize="cut.size"
+            :outputType="cut.outputType"
+            :autoCrop="cut.autoCrop"
+        >
+        </vueCropper>
+      </div>
+      <div slot="footer">
+        <Button @click="cancelReset()" style="margin-left: 8px">取消</Button>
+        <Button type="primary" icon="crop" @click="handleCrop" class="pictureButton">裁剪</Button>
+      </div>
+    </Modal>   
   </div>
 </template>
 <script>
- import { cropperPicture,getToken } from '../../libs/util';
- import tinymce from '@/view/shared/tinymce.vue';
+  import { cropperPicture,getToken } from '../../libs/util';
+  import tinymce from '@/view/shared/tinymce.vue';
   import VueCropper from 'vue-cropper'
   import baseUrl from '_conf/url'
   export default {
     components: { VueCropper ,tinymce},
-    name: 'version',
+    name: 'courseware',
     data() {
       return {
         allowUpload:true,
         baseUrl:baseUrl,
-        versionForm: {
-          versionNo: undefined,
-          type: undefined,
+        coursewareForm: {
+          coursewareCode: undefined,
+          coursewareName: undefined,
           resHash: undefined,
           description: undefined,
-          updateLog: undefined,
-          resUrl: undefined,        
+          coverImg: undefined,
+          url: undefined,        
         },
         versionFormRule: {
           versionNo: [
@@ -165,11 +186,10 @@
         deleteIndex: '',
         columns: [
           { type: 'index', title: '序号', width: 60, align: 'center' },
-          { title: '版本号', key: 'versionNo', align: 'center' },
-          { title: '种类', key: 'type', align: 'center' },
-          { title: '资源hash值', key: 'resHash', align: 'center' },
+          { title: '课件代码', key: 'coursewareCode', align: 'center' },
+          { title: '课件名称', key: 'coursewareName', align: 'center' },
           { title: '描述', key: 'description', align: 'center' },
-          { title: '资源地址', key: 'resUrl', align: 'center' },
+          { title: '资源地址', key: 'url', align: 'center' },
           {
             title: '操作',
             align: 'center',
@@ -197,7 +217,7 @@
           page: this.pageInfo.pageNum || 1,
           size: this.pageInfo.pageSize || 10
         };
-        this.$http.get('/version', params).then((res) => {
+        this.$http.get('/courseware', params).then((res) => {
           self.loading = false;
           if (res.code === 200) {
             const result = res.data;
@@ -220,8 +240,7 @@
       },
       getUploadRes(res){
         if (res.code === 200) {
-          this.versionForm.resHash=res.data[0].hash;
-          this.versionForm.resUrl=res.data[0].location;
+          this.coursewareForm.url=res.data[0].location;
           this.allowUpload=false;
         }else{
           this.$Message.success('上传文件失败');
@@ -237,10 +256,10 @@
       },
 
       getCheckMenuList(list) {
-        this.versionForm.menuIds = [];
+        this.coursewareForm.menuIds = [];
         if (list) {
           list.forEach(item => {
-            this.versionForm.menuIds.push(item.id);
+            this.coursewareForm.menuIds.push(item.id);
           })
         }
       },
@@ -273,7 +292,7 @@
           };
           this.$http.post('/common/file/upload', fd, config).then(resp => {
             if (resp.code === 200) {
-              self.versionForm.imageUrl = resp.data.location;
+              self.coursewareForm.imageUrl = resp.data.location;
               self.fileChoose = true;
             }
           }).catch(err => {
@@ -326,9 +345,9 @@
         this.$refs.file.clearFiles();
         this.isSaving = false;
         this.fileChoose = false;
-        this.$refs.versionForm.resetFields();
+        this.$refs.coursewareForm.resetFields();
         this.modalTitle = '添加版本信息';
-        this.versionForm = {
+        this.coursewareForm = {
           versionNo: undefined,
           type: undefined,
           resHash: undefined,
@@ -343,21 +362,21 @@
         this.isSaving = false;
         this.isShow = false;
         const self = this;
-        this.$refs.versionForm.resetFields();
+        this.$refs.coursewareForm.resetFields();
         this.modalTitle = '编辑版本信息';
         this.editModal = true;
-        this.$http.get('/version/' + self.data[index].id, {}).then((res) => {
+        this.$http.get('/courseware/' + self.data[index].id, {}).then((res) => {
           if (res.code === 200) {
-            self.versionForm = res.data;
-            if (self.versionForm.imageUrl) {
+            self.coursewareForm = res.data;
+            if (self.coursewareForm.imageUrl) {
               self.fileChoose = true;
             }
-            if (self.versionForm.menuIds && self.versionForm.menuIds.length > 0) {
+            if (self.coursewareForm.menuIds && self.coursewareForm.menuIds.length > 0) {
               for (let key in self.originMenu) {
                 self.originMenu[key].forEach(item => {
                   item.checked = false;
-                  for (let i=0; i<self.versionForm.menuIds.length; i++) {
-                    if (item.id === self.versionForm.menuIds[i]) {
+                  for (let i=0; i<self.coursewareForm.menuIds.length; i++) {
+                    if (item.id === self.coursewareForm.menuIds[i]) {
                       item.checked = true;
                     }
                   }
@@ -370,7 +389,7 @@
 //              self.resetCheckMenu();
             }
           } else {
-            self.$Message.error('获取role失败！' + res.code);
+            self.$Message.error('获取courseware失败！' + res.code);
           }
 
         });
@@ -379,10 +398,10 @@
       handleSubmit() {
         this.isSaving = true;
         let self = this;
-        this.$refs.versionForm.validate((valid) => {
+        this.$refs.coursewareForm.validate((valid) => {
           if (valid) {
-             if (this.versionForm.id) {
-              this.$http.put('/version', self.versionForm).then((res) => {
+             if (this.coursewareForm.id) {
+              this.$http.put('/courseware', self.coursewareForm).then((res) => {
                 if (res.code === 200) {
                   self.editModal = false;
                   self.reloadList();
@@ -395,7 +414,7 @@
                 self.isSaving = false;
               })
             } else {
-              this.$http.post('/version', self.versionForm).then((res) => {
+              this.$http.post('/courseware', self.coursewareForm).then((res) => {
                 if (res.code === 200) {
                   self.editModal = false;
                   self.reloadList();
@@ -425,7 +444,7 @@
       deleteItem() {
         this.isDeleting = true;
         const self = this;
-        this.$http.delete('/version/' + self.data[self.deleteIndex].id, {}).then((res) => {
+        this.$http.delete('/courseware/' + self.data[self.deleteIndex].id, {}).then((res) => {
           if (res.code === 200) {
             self.isDeleting = false;
             self.deleteModal = false;
