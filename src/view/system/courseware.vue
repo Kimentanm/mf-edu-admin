@@ -48,7 +48,7 @@
         cancel-text="取消"
         :title="modalTitle"
         :styles="{top: '20px'}">
-      <Form ref='coursewareForm' :model='coursewareForm' :rules='versionFormRule' :label-width='90'>
+      <Form ref='coursewareForm' :model='coursewareForm' :rules='coursewareFormRule' :label-width='90'>
         <FormItem label='课件代码' prop='coursewareCode'>
           <Input v-model='coursewareForm.coursewareCode' :maxlength=50 placeholder='请输入课件代码' style="width: 550px;"/>
         </FormItem>
@@ -73,9 +73,10 @@
             </div>
           </div>
         </FormItem>
-        <FormItem label="PPT文件:">
+        <FormItem label="PPT文件:"prop='url'> 
           <Upload
             ref='file'
+            accept="application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
             multiple
             type="drag"
             :action="baseUrl + '/common/file/upload'" 
@@ -84,6 +85,7 @@
             :before-upload='beforeUpload'
             :on-success='getUploadRes'
             :on-remove='uploadRemove'
+            :default-file-list='uploadFileList'
             >
             <div style="padding: 20px 0">
                 <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
@@ -149,19 +151,23 @@
           coverImg: undefined,
           url: undefined,        
         },
-        versionFormRule: {
-          versionNo: [
-            { required: true, message: '版本号不能为空.', trigger: 'blur' },
+        coursewareFormRule: {
+          coursewareCode: [
+            { required: true, message: '课件代码不能为空.', trigger: 'blur' },
             { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
-          type:[
-             { required: true, type: 'string', message: '性别不能为空.', trigger: 'change' }
+          coursewareName:[
+             { required: true, type: 'string', message: '课件名称不能为空.', trigger: 'blur' },
+              { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
-          resUrl: [
+          url: [
             { required: true, message: '资源地址不能为空.', trigger: 'blur' },
-            { type: 'string', max: 255, message: 'Code最多255字符', trigger: 'blur' },
           ],
         },
+        uploadFileList:[{
+            name: '课件.ppt',
+            url: undefined
+        }],
         cut: {
           size: 1,
           Img: '',
@@ -240,6 +246,7 @@
       },
       getUploadRes(res){
         if (res.code === 200) {
+          console.log(res);
           this.coursewareForm.url=res.data[0].location;
           this.allowUpload=false;
         }else{
@@ -346,30 +353,37 @@
         this.isSaving = false;
         this.fileChoose = false;
         this.$refs.coursewareForm.resetFields();
-        this.modalTitle = '添加版本信息';
+        this.modalTitle = '添加版课件库信息';
         this.coursewareForm = {
           versionNo: undefined,
           type: undefined,
           resHash: undefined,
           description: undefined,
           updateLog: undefined,
-          resUrl: undefined,  
+          resUrl: undefined,
+
         };
         this.editModal = true;
       },
 
       edit(index) {
+        this.$refs.file.clearFiles();
         this.isSaving = false;
         this.isShow = false;
         const self = this;
         this.$refs.coursewareForm.resetFields();
-        this.modalTitle = '编辑版本信息';
+        this.modalTitle = '编辑课件库信息';
         this.editModal = true;
         this.$http.get('/courseware/' + self.data[index].id, {}).then((res) => {
           if (res.code === 200) {
             self.coursewareForm = res.data;
-            if (self.coursewareForm.imageUrl) {
+            if (self.coursewareForm.coverImg) {
               self.fileChoose = true;
+            }
+            if(self.coursewareForm.url){            
+              this.uploadFileList[0].url=self.coursewareForm.url;
+              // console.log(self.coursewareForm.url)
+              console.log(this.uploadFileList);
             }
             if (self.coursewareForm.menuIds && self.coursewareForm.menuIds.length > 0) {
               for (let key in self.originMenu) {
