@@ -470,7 +470,7 @@ import VueCropper from 'vue-cropper'
                 };
                 this.$http.post('/common/file/upload', fd, config).then(resp => {
                     if (resp.code === 200) {
-                    self.teacherForm.imageUrl = resp.data.location;
+                    self.teacherForm.imageUrl = resp.data[0].location;
                     self.fileChoose = true;
                     }
                 }).catch(err => {

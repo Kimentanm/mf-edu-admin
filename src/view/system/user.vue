@@ -425,7 +425,7 @@
           };
           this.$http.post('/common/file/upload', fd, config).then(resp => {
             if (resp.code === 200) {
-              self.userForm.imageUrl = resp.data.location;
+              self.userForm.imageUrl = resp.data[0].location;
               self.fileChoose = true;
             }
           }).catch(err => {

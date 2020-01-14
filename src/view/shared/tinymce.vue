@@ -158,7 +158,7 @@
 //            };
             vm.$http.post('/common/file/upload', formData).then(resp => {
               if (resp.code === 200) {
-                success(resp.data.location);
+                success(resp.data[0].location);
               } else {
                 failure('file upload failed: ' + resp);
               }

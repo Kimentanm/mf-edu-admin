@@ -73,7 +73,7 @@
             </div>
           </div>
         </FormItem>
-        <FormItem  >
+        <FormItem label="PPT文件:">
           <Upload
             ref='file'
             multiple
@@ -292,7 +292,7 @@
           };
           this.$http.post('/common/file/upload', fd, config).then(resp => {
             if (resp.code === 200) {
-              self.coursewareForm.imageUrl = resp.data.location;
+              self.coursewareForm.coverImg = resp.data[0].location;
               self.fileChoose = true;
             }
           }).catch(err => {
