@@ -200,7 +200,7 @@
           };
           this.$http.post('/common/file/upload', fd, config).then(resp => {
             if (resp.code === 200) {
-              self.newsForm.imageUrl = resp.data.location;
+              self.newsForm.imageUrl = resp.data[0].location;
               this.cut.Img = resp.data.data.location;
             }
           }).catch(err => {

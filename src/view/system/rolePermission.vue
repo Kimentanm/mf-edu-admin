@@ -93,7 +93,7 @@
         </Col>
         <Col span="18" class="height-100">
             <Card title="权限树" icon="ios-options" class="height-100">
-                <Button shape="circle" slot="extra" @click="submitNode()">保存</Button>
+                <Button shape="circle" slot="extra" :loading="loading" @click="submitNode()" v-if="saveVisual">保存</Button>
                 <Tree v-if="!treeLoading" :data="data4" show-checkbox multiple/>
                 <Spin fix v-if="treeLoading">
                     <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
@@ -150,6 +150,7 @@
         name: 'rolePermission',
         data() {
             return {
+                loading: false,
                 rerunModalLoading: true,
                 treeLoading: true,
                 editCell: false,
@@ -203,9 +204,6 @@
                             expand: true,
                             children: res.data.children
                         };
-                        setTimeout(() => {
-                            self.treeLoading = false;
-                        }, 100)
                     } else {
                         self.$Message.error('获取数据失败！' + res.code);
                     }
@@ -264,12 +262,16 @@
                 })
             },
             submitNode() {
+                this.roleForm.permissionIds = [];
                 this.saveTreeNode(this.data4);
+                this.loading=true;
                 this.$http.put('/role/updateRole', this.roleForm).then((res) => {
-                    if (response.code === 200) {
-                        self.$Message.success('保存成功！');
+                    if (res.code === 200) {
+                        this.loading=false;
+                        this.$Message.success('保存成功！');
+                        this.findRoleId([this.roleForm.id]);
                     } else {
-                        self.$Message.success('保存失败！');
+                        this.$Message.success('保存失败！');
                     }
                 })
             },
@@ -346,12 +348,16 @@
                     this.$http.get('/role/detailInfo/' + res[0], {}).then((response) => {
                         if (response.code === 200) {
                             let permissions = response.data?.permissions;
-                            if (permissions) {
+                            if ( response.data) {
+                            
                                 this.traverseTreeLeafNode(this.data4, permissions);
                             }
                             this.roleForm = response.data;
+                            this.treeLoading = false;
                         }
                     })
+                } else {
+                    this.treeLoading = false;
                 }
             },
             /**
@@ -368,6 +374,7 @@
                         let result = false;
                         if (index !== -1 && index !== undefined) {
                             result = true;
+                            // console.log(child);
                         }
                         // 数组的长度改变会触发页面重新渲染，但是属性改变不会，所以要使用$set
                         this.$set(child, 'checked', result)
@@ -375,24 +382,40 @@
                 });
             },
             saveTreeNode(children) {
-                this.roleForm.permissionIds = [];
                 children.forEach(child => {
                     if (child.children.length) {
                         this.saveTreeNode(child.children)
                     } else {
                         if (child.checked === true) {
                             let id = child.id;
-                            this.roleForm.permissionIds.push(id);
+                            this.roleForm.permissionIds.push(child.id);
                         }
                     }
                 })
-
-            }
+                
+            },
+            //初始页面节点不可选 
+             TreeDisabled(children) {
+                children.forEach(child => {
+                    if (child.children.length) {
+                        this.$set(child, 'disabled', true)
+                        this.TreeDisabled(child.children)
+                    } else {
+                       this.$set(child, 'disabled', true)
+                    }
+                })
+                
+            },
         },
-        created() {
-            this.getTree();
+        async created() {
+            await this.getTree();
+            this.treeLoading = false;
             this.getRole();
+             this.TreeDisabled(this.data4[0].children);
         },
+        mounted(){
+           
+        }
 
     }
 

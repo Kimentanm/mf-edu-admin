@@ -7,8 +7,10 @@ import ownSpace from './ownSpace'
 import teacherRouter from './teacherRouter'
 import studentRouter from './studentRouter'
 import classroomRouter from './classroomRouter'
-// import permissionRouter from "./permissionRouter";
-// import rolePermissionRouter from "./rolePermissionRouter";
+import permissionRouter from "./permissionRouter";
+import rolePermissionRouter from "./rolePermissionRouter";
+import versionRouter from "./versionRouter";
+import coursewareRouter from "./coursewareRouter";
 // *** insert import here *** // // don't change this line
 
 export default {
@@ -28,7 +30,9 @@ export default {
         teacherRouter,
         studentRouter,
         classroomRouter,
-        // permissionRouter,
-        // rolePermissionRouter
+        permissionRouter,
+        rolePermissionRouter,
+        versionRouter,
+        coursewareRouter
     ]
 }

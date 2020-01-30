@@ -70,7 +70,7 @@ export default {
       return this.$store.state.user.avatorImgPath
     },
     userName () {
-      return this.$store.state.user.userName
+      return this.$store.state.user.userIdentity.name
     },
     cacheList () {
       return this.tagNavList.length ? this.tagNavList.filter(item => !(item.meta && item.meta.notCache)).map(item => item.name) : []

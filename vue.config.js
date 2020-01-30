@@ -47,6 +47,7 @@ module.exports = {
   productionSourceMap: false,
   devServer: {
     port: 9100,
+    disableHostCheck: true,
     proxy: {
       '/api': {
         target: 'http://localhost:8082/mf-edu',
