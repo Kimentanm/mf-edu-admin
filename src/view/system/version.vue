@@ -55,8 +55,8 @@
         <FormItem label='种类' prop='type'>
           <i-select placeholder="请选择种类" :autosize='{minRows: 2,maxRows: 5}'
             :maxlength=500 style="width: 550px;"v-model='versionForm.type'>
-              <i-option value="student">Student</i-option>
-              <i-option value="teacher">Teacher</i-option>
+              <i-option value="STUDENT">Student</i-option>
+              <i-option value="TEACHER">Teacher</i-option>
           </i-select>
         </FormItem>
         <FormItem label='描述' prop='description' >
@@ -327,6 +327,7 @@
         this.fileChoose = false;
         this.$refs.versionForm.resetFields();
         this.modalTitle = '添加版本信息';
+        this.allowUpload=true;
         this.versionForm = {
           versionNo: undefined,
           type: undefined,
