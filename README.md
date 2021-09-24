@@ -1,4 +1,8 @@
 # 在线一对一后台管理平台 ── 前端
+## 关联项目
+- [服务端](https://github.com/Kimentanm/mf-edu-server)
+- [教师客户端](https://github.com/Kimentanm/mf-edu-teacher)
+
 ## 功能项
 1. 用户管理
 2. 角色管理
